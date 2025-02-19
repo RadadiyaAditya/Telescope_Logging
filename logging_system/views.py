@@ -30,12 +30,22 @@ def telescope_log_view(request):
             general_form.data['log_end_time_utc'] = utc_time
 
 
-        else:
-            general_form = GeneralInfoForm()
 
         if (general_form.is_valid() and env_form.is_valid() and telescope_form.is_valid() and
             observation_form.is_valid() and instrumentation_form.is_valid() and remote_form.is_valid() and
             comment_form.is_valid()):
+
+            general_instance = general_form.save(commit=False)
+            
+            # Set log start/end times if they were not manually set
+            
+            general_instance.log_start_time_lst = lst_time
+            general_instance.log_start_time_utc = utc_time
+            general_instance.log_end_time_lst = lst_time
+            general_instance.log_end_time_utc = utc_time
+
+            general_instance.save()  # Now save the updated instance
+
 
             general_form.save()
             env_form.save()

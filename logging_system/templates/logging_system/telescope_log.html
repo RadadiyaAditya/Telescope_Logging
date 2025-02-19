@@ -115,28 +115,6 @@
         }, 5000);
     };
 
-    function startLog() {
-        let now = new Date();
-        let utcTime = now.toISOString().slice(0, 19).replace("T", " ");
-
-        // Display UTC time immediately after clicking Start Log
-        document.getElementById("log_start_time_display").value = utcTime;
-
-        // Enable End Log button
-        document.getElementById("end_log_button").disabled = false;
-    }
-
-    function endLog() {
-        let now = new Date();
-        let utcTime = now.toISOString().slice(0, 19).replace("T", " ");
-
-        // Display End Log Time
-        document.getElementById("log_end_time_display").value = utcTime;
-
-        // Disable End Log button after it's clicked
-        document.getElementById("end_log_button").disabled = true;
-    }
-
 </script>
 
 {% endblock %}

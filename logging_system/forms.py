@@ -10,10 +10,13 @@ class GeneralInfoForm(forms.ModelForm):
         model = GeneralInfo
         fields = '__all__'
         widgets = {
+            # these parameters will be hidden
             'log_start_time_utc': forms.HiddenInput(),
             'log_start_time_lst': forms.HiddenInput(),
             'log_end_time_utc': forms.HiddenInput(),
             'log_end_time_lst': forms.HiddenInput(),
+
+            # these parameters are not in databse but will be shown on webapp
             'lst_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             'utc_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             }
