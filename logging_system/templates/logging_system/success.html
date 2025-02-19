@@ -1,0 +1,8 @@
+{% extends 'logging_system/base.html' %}
+
+{% block content %}
+<div class="alert alert-success text-center">
+    <h4>Log Saved Successfully!</h4>
+    <a href="{% url 'telescope_log' %}" class="btn btn-primary">Go Back</a>
+</div>
+{% endblock %}
