@@ -1,0 +1,36 @@
+{% extends 'logging_system/base.html' %}
+
+{% block content %}
+<h2>All Log Sessions</h2>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Session ID</th>
+            <th>Telescope</th>
+            <th>Operator</th>
+            <th>Log Start (UTC)</th>
+            <th>Log End (UTC)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.session_id }}</td>
+            <td>{{ log.telescope_name }}</td>
+            <td>{{ log.operator_name }}</td>
+            <td>{{ log.log_start_time_utc }}</td>
+            <td>{{ log.log_end_time_utc }}</td>
+            <td>
+                <!-- Assuming you have a session detail view -->
+                <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No logs available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

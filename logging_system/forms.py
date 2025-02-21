@@ -10,7 +10,7 @@ class GeneralInfoForm(forms.ModelForm):
         model = GeneralInfo
         fields = '__all__'
         widgets = {
-            # these parameters will be hidden
+            # these parameters are in database but will be hidden on webapp
             'log_start_time_utc': forms.HiddenInput(),
             'log_start_time_lst': forms.HiddenInput(),
             'log_end_time_utc': forms.HiddenInput(),
@@ -25,6 +25,7 @@ class EnvironmentalConditionForm(forms.ModelForm):
     class Meta:
         model = EnvironmentalCondition
         fields = '__all__'
+        exclude = ['general_info']
         widgets = {
             'temperature': forms.NumberInput(attrs={'step': '0.1'}),
             'humidity': forms.NumberInput(attrs={'step': '0.1'}),
@@ -37,6 +38,7 @@ class ObservationForm(forms.ModelForm):
     class Meta:
         model = Observation
         fields = '__all__'
+        exclude = ['general_info']
 
     target_name = forms.CharField(
         label="Target name (as per SIMBAD)",
@@ -49,6 +51,7 @@ class TelescopeConfigurationForm(forms.ModelForm):
     class Meta:
         model = TelescopeConfiguration
         fields = '__all__'
+        exclude = ['general_info']
         widgets = {
             'pointing_accuracy': forms.NumberInput(attrs={'step': '0.1'}),
             'focus_position': forms.NumberInput(attrs={'step': '0.1'}),
@@ -60,6 +63,7 @@ class InstrumentationForm(forms.ModelForm):
     class Meta:
         model = Instrumentation
         fields = '__all__'
+        exclude = ['general_info']
         widgets = {
             'exposure_time': forms.NumberInput(attrs={'step': '0.1'}),
         }
@@ -69,11 +73,13 @@ class RemoteOperationForm(forms.ModelForm):
     class Meta:
         model = RemoteOperation
         fields = '__all__'
+        exclude = ['general_info']
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comments
         fields = '__all__'
+        exclude = ['general_info']
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 5, 'cols': 40, 'placeholder': 'Enter comments here...'}),
         }

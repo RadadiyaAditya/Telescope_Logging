@@ -1,11 +1,11 @@
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
     ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm
 )
-from datetime import datetime, timezone
-from .lst import compute_lst
+from .models import GeneralInfo
+
 # Create your views here.
 
 def telescope_log_view(request):
@@ -25,13 +25,32 @@ def telescope_log_view(request):
             comment_form.is_valid()):
 
 
-            general_form.save()
-            env_form.save()
-            telescope_form.save()
-            observation_form.save()
-            instrumentation_form.save()
-            remote_form.save()
-            comment_form.save()
+            general_instance = general_form.save()
+            
+            # For each related form, use commit=False, then set general_info.
+            env_instance = env_form.save(commit=False)
+            env_instance.general_info = general_instance
+            env_instance.save()
+            
+            telescope_instance = telescope_form.save(commit=False)
+            telescope_instance.general_info = general_instance
+            telescope_instance.save()
+            
+            observation_instance = observation_form.save(commit=False)
+            observation_instance.general_info = general_instance
+            observation_instance.save()
+            
+            instrumentation_instance = instrumentation_form.save(commit=False)
+            instrumentation_instance.general_info = general_instance
+            instrumentation_instance.save()
+            
+            remote_instance = remote_form.save(commit=False)
+            remote_instance.general_info = general_instance
+            remote_instance.save()
+            
+            comment_instance = comment_form.save(commit=False)
+            comment_instance.general_info = general_instance
+            comment_instance.save()
 
             return redirect('success')  # Redirect to a success page after saving
 
@@ -57,3 +76,42 @@ def telescope_log_view(request):
 def success_view(request):
     return render(request, 'logging_system/success.html')
 
+def log_data_view(request):
+    # Retrieve all log entries, ordering by the latest start time first
+    logs = (
+        GeneralInfo.objects.all()
+        .order_by('-log_start_time_utc')
+        .select_related(
+            'environmental_condition',
+            'observation',
+            'telescope_configuration',
+            'instrumentation',
+            'remote_operation',
+            'comments'
+        )
+    )
+    return render(request, 'logging_system/log_data.html', {'logs': logs})
+
+def session_detail_view(request, session_id):
+    # Retrieve the main GeneralInfo record using the unique session_id.
+    general = get_object_or_404(GeneralInfo, session_id=session_id)
+    
+    # Retrieve the related one-to-one objects using the related_name specified in your models.
+    # Use getattr() with a default of None in case a related record doesn't exist.
+    environmental_condition = getattr(general, 'environmental_condition', None)
+    observation = getattr(general, 'observation', None)
+    telescope_configuration = getattr(general, 'telescope_configuration', None)
+    instrumentation = getattr(general, 'instrumentation', None)
+    remote_operation = getattr(general, 'remote_operation', None)
+    comments = getattr(general, 'comments', None)
+    
+    context = {
+        'general': general,
+        'environmental_condition': environmental_condition,
+        'observation': observation,
+        'telescope_configuration': telescope_configuration,
+        'instrumentation': instrumentation,
+        'remote_operation': remote_operation,
+        'comments': comments,
+    }
+    return render(request, 'logging_system/session_detail.html', context)

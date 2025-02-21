@@ -12,19 +12,25 @@ class GeneralInfo(models.Model):
     OBSERVATORY_CHOICES = [
         ('PRL Mount Abu Observatory','PRL Mount Abu Observatory')
     ]
-    
-    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES)
-    observatory_name = models.CharField(max_length=100, choices=OBSERVATORY_CHOICES)
+
+    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2mm)')
+    observatory_name = models.CharField(max_length=100, choices=OBSERVATORY_CHOICES, default='PRL Mount Abu Observatory')
     operator_name = models.CharField(max_length=100)
-    session_id = models.CharField(max_length=50)
-    log_start_time_lst = models.DateTimeField(blank=True, null=True)
-    log_start_time_utc = models.DateTimeField(blank=True, null=True)
-    log_end_time_lst = models.DateTimeField(blank=True, null=True)
-    log_end_time_utc = models.DateTimeField(blank=True, null=True)
+    session_id = models.CharField(max_length=50, unique=True)
+    log_start_time_lst = models.DateTimeField(blank=False, null=False, unique=True)
+    log_start_time_utc = models.DateTimeField(blank=False, null=False)
+    log_end_time_lst = models.DateTimeField(blank=False,  null=False, unique=True)
+    log_end_time_utc = models.DateTimeField(blank=False, null=False)
 
 
 # Environmental Conditions
 class EnvironmentalCondition(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='environmental_condition'
+    )
+
     TEMPERATURE_UNITS = [('C', 'Celsius'), ('K', 'Kelvin')]
     
     temperature = models.FloatField()
@@ -39,14 +45,26 @@ class EnvironmentalCondition(models.Model):
 
 # Observation Parameters
 class Observation(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='observation'
+    )
+
     target_name = models.CharField(max_length=100)
     right_ascension = models.CharField(max_length=50)
     declination = models.CharField(max_length=50)
     air_mass = models.FloatField()
-    magnitude = models.FloatField(null=True, blank=True)
+    magnitude = models.FloatField(blank=True)
 
 # Telescope Configuration
 class TelescopeConfiguration(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='telescope_configuration'
+    )
+
     TRACKING_MODES = [('Sidereal', 'Sidereal'), ('Lunar', 'Lunar'), ('Solar', 'Solar')]
     GUIDING_STATUSES = [('Active', 'Active'), ('Passive', 'Passive'), ('Disaled', 'Disabled')]
 
@@ -56,20 +74,38 @@ class TelescopeConfiguration(models.Model):
 
 # Instrumentation
 class Instrumentation(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='instrumentation'
+    )
+
     OBSERVING_MODES = [('Imaging', 'Imaging'), ('Spectroscopy', 'Spectroscopy'), ('Spectropolarimetry', 'Spectropolarimetry'), ('Polarimetry', 'Polarimetry')]
     FILTERS = [('U', 'U'), ('B', 'B'), ('V', 'V'), ('R', 'R'), ('I', 'I')]
 
     observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
     instrument_name = models.CharField(max_length=100)
     filter_in_use = models.CharField(max_length=10, choices=FILTERS, default='U')
-    exposure_time = models.FloatField()
-    polarization_mode = models.BooleanField(default=True)
+    exposure_time = models.FloatField(default='10')
+    polarization_mode = models.BooleanField(default=False)
 
 # Remote Operation and Network Status
 class RemoteOperation(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='remote_operation'
+    )
+
     remote_access = models.BooleanField(default=False)
     remote_observer = models.CharField(max_length=100, blank=True, null=True)
     emergency_stop = models.BooleanField(default=False)
 
 class Comments(models.Model):
+    general_info = models.OneToOneField(
+        GeneralInfo, 
+        on_delete=models.CASCADE, 
+        related_name='comments'
+    )
+
     comments = models.TextField(blank=True, null=True)

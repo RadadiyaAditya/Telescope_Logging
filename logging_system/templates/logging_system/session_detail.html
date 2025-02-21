@@ -1,0 +1,207 @@
+{% extends 'logging_system/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Session Details: {{ general.session_id }}</h2>
+
+<div class="container">
+    <!-- Row 1: General Information, Environmental Conditions, Observation Parameters -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <h4>General Information</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Telescope</th>
+                        <td>{{ general.telescope_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Observatory</th>
+                        <td>{{ general.observatory_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Operator</th>
+                        <td>{{ general.operator_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Log Start (UTC)</th>
+                        <td>{{ general.log_start_time_utc }}</td>
+                    </tr>
+                    <tr>
+                        <th>Log Start (LST)</th>
+                        <td>{{ general.log_start_time_lst }}</td>
+                    </tr>
+                    <tr>
+                        <th>Log End (UTC)</th>
+                        <td>{{ general.log_end_time_utc }}</td>
+                    </tr>
+                    <tr>
+                        <th>Log End (LST)</th>
+                        <td>{{ general.log_end_time_lst }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            {% if environmental_condition %}
+            <h4>Environmental Conditions</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Temperature</th>
+                        <td>{{ environmental_condition.temperature }} {{ environmental_condition.temperature_unit }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Humidity</th>
+                        <td>{{ environmental_condition.humidity }}</td>
+                    </tr>
+                    <tr>
+                        <th>Wind Speed</th>
+                        <td>{{ environmental_condition.wind_speed }}</td>
+                    </tr>
+                    <tr>
+                        <th>Seeing</th>
+                        <td>{{ environmental_condition.seeing }}</td>
+                    </tr>
+                    <tr>
+                        <th>Cloud Cover</th>
+                        <td>{{ environmental_condition.cloud_cover }}</td>
+                    </tr>
+                    <tr>
+                        <th>Moon Phase</th>
+                        <td>{{ environmental_condition.moon_phase }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if observation %}
+            <h4>Observation Parameters</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Target</th>
+                        <td>{{ observation.target_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Right Ascension</th>
+                        <td>{{ observation.right_ascension }}</td>
+                    </tr>
+                    <tr>
+                        <th>Declination</th>
+                        <td>{{ observation.declination }}</td>
+                    </tr>
+                    <tr>
+                        <th>Air Mass</th>
+                        <td>{{ observation.air_mass }}</td>
+                    </tr>
+                    <tr>
+                        <th>Magnitude</th>
+                        <td>{{ observation.magnitude }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Row 2: Telescope Configuration, Instrumentation, Remote Operation -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            {% if telescope_configuration %}
+            <h4>Telescope Configuration</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Focus Position</th>
+                        <td>{{ telescope_configuration.focus_position }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tracking Mode</th>
+                        <td>{{ telescope_configuration.tracking_mode }}</td>
+                    </tr>
+                    <tr>
+                        <th>Guiding Status</th>
+                        <td>{{ telescope_configuration.guiding_status }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if instrumentation %}
+            <h4>Instrumentation</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Instrument</th>
+                        <td>{{ instrumentation.instrument_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Observing Mode</th>
+                        <td>{{ instrumentation.observing_mode }}</td>
+                    </tr>
+                    <tr>
+                        <th>Filter</th>
+                        <td>{{ instrumentation.filter_in_use }}</td>
+                    </tr>
+                    <tr>
+                        <th>Exposure Time</th>
+                        <td>{{ instrumentation.exposure_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Polarization Mode</th>
+                        <td>{{ instrumentation.polarization_mode }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if remote_operation %}
+            <h4>Remote Operation</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Remote Access</th>
+                        <td>{{ remote_operation.remote_access }}</td>
+                    </tr>
+                    <tr>
+                        <th>Remote Observer</th>
+                        <td>{{ remote_operation.remote_observer }}</td>
+                    </tr>
+                    <tr>
+                        <th>Emergency Stop</th>
+                        <td>{{ remote_operation.emergency_stop }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Row 3: Comments (if available) -->
+    {% if comments %}
+    <div class="row mb-4">
+        <div class="col-md-4 offset-md-4">
+            <h4>Comments</h4>
+            <table class="table table-bordered table-striped">
+                <tbody>
+                    <tr>
+                        <th>Comments</th>
+                        <td>{{ comments.comments }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
+{% endblock %}
