@@ -21,7 +21,7 @@ A **web-based Telescope Logging System** built with **Django (Framework)** and *
 - **Version Control:** Git & GitHub
 
 ## Diagram
-![Project Diagram](assets/screenshot.png)
+![Project Diagram](assets/diagram.png)
 
 
 ## 🛠️ Installation
