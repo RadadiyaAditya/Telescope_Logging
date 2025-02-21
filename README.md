@@ -14,11 +14,14 @@ A **web-based Telescope Logging System** built with **Django (Framework)** and *
 
 ## ⚙️ Tech Stack
 
-- **Backend:** FastAPI 🚀
-- **Frontend:** Django Templates
+- **Backend:** Django 🚀
+- **Frontend:** HTML, CSS, JavaScript, Django Templates
 - **Database:** PostgreSQL / SQLite
-- **Real-time Communication:** WebSockets
+- **Real-time Communication:** Django Channels (WebSockets)
 - **Version Control:** Git & GitHub
+
+## Diagram
+![Project Diagram](assets/screenshot.png)
 
 
 ## 🛠️ Installation
