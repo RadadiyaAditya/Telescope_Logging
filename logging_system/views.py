@@ -9,8 +9,6 @@ from .lst import compute_lst
 # Create your views here.
 
 def telescope_log_view(request):
-    lst_time = compute_lst(datetime.now())  # Compute LST time
-    utc_time = datetime.now(timezone.utc)  # Get UTC time
 
     if request.method == 'POST':
         general_form = GeneralInfoForm(request.POST)
@@ -21,30 +19,10 @@ def telescope_log_view(request):
         remote_form = RemoteOperationForm(request.POST)
         comment_form = CommentForm(request.POST)
 
-        if 'start_log' in request.POST:
-            general_form.data['log_start_time_lst'] = lst_time
-            general_form.data['log_start_time_utc'] = utc_time
-
-        if 'end_log' in request.POST:
-            general_form.data['log_end_time_lst'] = lst_time
-            general_form.data['log_end_time_utc'] = utc_time
-
-
 
         if (general_form.is_valid() and env_form.is_valid() and telescope_form.is_valid() and
             observation_form.is_valid() and instrumentation_form.is_valid() and remote_form.is_valid() and
             comment_form.is_valid()):
-
-            general_instance = general_form.save(commit=False)
-            
-            # Set log start/end times if they were not manually set
-            
-            general_instance.log_start_time_lst = lst_time
-            general_instance.log_start_time_utc = utc_time
-            general_instance.log_end_time_lst = lst_time
-            general_instance.log_end_time_utc = utc_time
-
-            general_instance.save()  # Now save the updated instance
 
 
             general_form.save()
@@ -68,8 +46,6 @@ def telescope_log_view(request):
 
     return render(request, 'logging_system/telescope_log.html', {
         'general_form': general_form,
-        'lst_time': lst_time,
-        'utc_time': utc_time,
         'env_form': env_form,
         'telescope_form': telescope_form,
         'observation_form': observation_form,
