@@ -82,9 +82,9 @@ class Instrumentation(models.Model):
 
     OBSERVING_MODES = [('Imaging', 'Imaging'), ('Spectroscopy', 'Spectroscopy'), ('Spectropolarimetry', 'Spectropolarimetry'), ('Polarimetry', 'Polarimetry')]
     FILTERS = [('U', 'U'), ('B', 'B'), ('V', 'V'), ('R', 'R'), ('I', 'I')]
-
+    INSTRUMENT_NAME = [('PARAS-1', 'PARAS-1'), ('PARAS-2', 'PARAS-2'), ('ProtoPol', 'ProtoPol'), ('LISA', 'LISA'),('EMPOL', 'EMPOL'),('LRS', 'LRS'),('FOSC', 'FOSC')]
     observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
-    instrument_name = models.CharField(max_length=100)
+    instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default='PARAS-1')
     filter_in_use = models.CharField(max_length=10, choices=FILTERS, default='U')
     exposure_time = models.FloatField(default='10')
     polarization_mode = models.BooleanField(default=False)

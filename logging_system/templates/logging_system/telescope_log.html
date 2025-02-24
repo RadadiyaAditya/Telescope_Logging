@@ -11,16 +11,29 @@
             <h5>General Information</h5>
             {{ general_form|crispy }}
 
-            <div class="form-group mt-3">
-                <label for="log_start_time_display">Log Start Time (UTC)</label>
-                <input type="text" id="log_start_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
+            <div class="form-group row mt-3">
+                <div class="col-md-6">
+                    <label for="log_start_time_display">Log Start Time (UTC)</label>
+                    <input type="text" id="log_start_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
+                </div>
+                <div class="col-md-6">
+                    <label for="log_start_time_display_lst">Log Start Time (LST)</label>
+                    <input type="text" id="log_start_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
+                        value="">
+                </div>
             </div>
 
-            <div class="form-group mt-3">
-                <label for="log_end_time_display">Log End Time (UTC)</label>
-                <input type="text" id="log_end_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
+            <div class="form-group row mt-3">
+                <div class="col-md-6">
+                    <label for="log_end_time_display">Log End Time (UTC)</label>
+                    <input type="text" id="log_end_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
+                </div>
+                <div class="col-md-6">
+                    <label for="log_end_time_display_lst">Log End Time (LST)</label>
+                    <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
+                        value="">
+                </div>
             </div>
-
 
             <!-- Display Real-Time LST (Without Saving) -->
             <label for="lst_time_display">Locat Sidereal Time (LST)</label>
@@ -122,6 +135,7 @@
         // For example, assuming you have an input for UTC start time:
         document.getElementById("log_start_time_display").value = currentUTC;
         document.getElementById("id_log_start_time_utc").value = currentUTC;
+        document.getElementById("log_start_time_display_lst").value = currentLST;
         document.getElementById("id_log_start_time_lst").value = currentLST;
         document.getElementById("end_log_button").disabled = false;
     }
@@ -135,6 +149,7 @@
         // For example, assuming you have an input for UTC end time:
         document.getElementById("log_end_time_display").value = currentUTC;
         document.getElementById("id_log_end_time_utc").value = currentUTC;
+        document.getElementById("log_end_time_display_lst").value = currentLST;
         document.getElementById("id_log_end_time_lst").value = currentLST;
     }
 

@@ -1,5 +1,6 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
     ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm
@@ -77,6 +78,10 @@ def success_view(request):
     return render(request, 'logging_system/success.html')
 
 def log_data_view(request):
+
+    query = request.GET.get('q')
+    date_filter = request.GET.get('date', '')
+
     # Retrieve all log entries, ordering by the latest start time first
     logs = (
         GeneralInfo.objects.all()
@@ -90,7 +95,23 @@ def log_data_view(request):
             'comments'
         )
     )
-    return render(request, 'logging_system/log_data.html', {'logs': logs})
+
+    if query:
+        logs = logs.filter( 
+            Q(session_id__icontains=query) |
+            Q(operator_name__icontains=query)
+            )
+    
+    if date_filter:
+        logs = logs.filter(log_start_time_utc__date=date_filter)
+
+    context = {
+        'logs': logs,
+        'query': query,
+        'date_filter': date_filter,
+    }
+
+    return render(request, 'logging_system/log_data.html', context)
 
 def session_detail_view(request, session_id):
     # Retrieve the main GeneralInfo record using the unique session_id.

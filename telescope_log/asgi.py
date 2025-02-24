@@ -11,7 +11,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'telescope_log.settings')
 
 django_asgi_app = get_asgi_application()
 
-django_asgi_app = WhiteNoise(django_asgi_app, root=str(BASE_DIR / 'staticfiles'))
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
