@@ -30,11 +30,8 @@ class EnvironmentalCondition(models.Model):
         on_delete=models.CASCADE, 
         related_name='environmental_condition'
     )
-
-    TEMPERATURE_UNITS = [('C', 'Celsius'), ('K', 'Kelvin')]
     
     temperature = models.FloatField()
-    temperature_unit = models.CharField(max_length=1, choices=TEMPERATURE_UNITS, default='C')
     humidity = models.FloatField()
     wind_speed = models.FloatField()
     seeing = models.FloatField()
@@ -52,10 +49,10 @@ class Observation(models.Model):
     )
 
     target_name = models.CharField(max_length=100)
-    right_ascension = models.CharField(max_length=50)
+    right_ascension = models.TimeField(max_length=50)
     declination = models.CharField(max_length=50)
     air_mass = models.FloatField()
-    magnitude = models.FloatField(blank=True)
+    magnitude = models.CharField(max_length=50)
 
 # Telescope Configuration
 class TelescopeConfiguration(models.Model):
@@ -81,7 +78,7 @@ class Instrumentation(models.Model):
     )
 
     OBSERVING_MODES = [('Imaging', 'Imaging'), ('Spectroscopy', 'Spectroscopy'), ('Spectropolarimetry', 'Spectropolarimetry'), ('Polarimetry', 'Polarimetry')]
-    FILTERS = [('U', 'U'), ('B', 'B'), ('V', 'V'), ('R', 'R'), ('I', 'I')]
+    FILTERS = [('None', 'None'),('U', 'U'), ('B', 'B'), ('V', 'V'), ('R', 'R'), ('I', 'I')]
     INSTRUMENT_NAME = [('PARAS-1', 'PARAS-1'), ('PARAS-2', 'PARAS-2'), ('ProtoPol', 'ProtoPol'), ('LISA', 'LISA'),('EMPOL', 'EMPOL'),('LRS', 'LRS'),('FOSC', 'FOSC')]
     observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
     instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default='PARAS-1')

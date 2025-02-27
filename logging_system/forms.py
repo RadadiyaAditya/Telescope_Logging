@@ -27,12 +27,30 @@ class EnvironmentalConditionForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['general_info']
         widgets = {
-            'temperature': forms.NumberInput(attrs={'step': '0.1'}),
             'humidity': forms.NumberInput(attrs={'step': '0.1'}),
             'wind_speed': forms.NumberInput(attrs={'step': '0.1'}),
             'seeing': forms.NumberInput(attrs={'step': '0.1'}),
         }
-
+    temperature = forms.FloatField(
+        label="Temprature (°C)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
+    humidity = forms.FloatField(
+        label="Humidity (%)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
+    wind_speed = forms.FloatField(
+        label="Wind Speed (m/s)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
+    seeing = forms.FloatField(
+        label="Seeing (arcsec)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
+    cloud_cover = forms.FloatField(
+        label="Cloud Cover (%)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
 # Observation Form
 class ObservationForm(forms.ModelForm):
     class Meta:
@@ -44,6 +62,14 @@ class ObservationForm(forms.ModelForm):
         label="Target name (as per SIMBAD)",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+    right_ascension = forms.TimeField(
+        label="Right Ascension (hh:mm:ss)",
+        widget=forms.TimeInput(attrs={"class": "form-control"}),
+    )
+    declination = forms.CharField(
+        label="Declination (dd:mm:ss)",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )  
 
 
 # Telescope Configuration Form
@@ -64,9 +90,11 @@ class InstrumentationForm(forms.ModelForm):
         model = Instrumentation
         fields = '__all__'
         exclude = ['general_info']
-        widgets = {
-            'exposure_time': forms.NumberInput(attrs={'step': '0.1'}),
-        }
+
+    exposure_time = forms.FloatField(
+        label="Exposure Time (sec)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
 
 # Remote Operation Form
 class RemoteOperationForm(forms.ModelForm):

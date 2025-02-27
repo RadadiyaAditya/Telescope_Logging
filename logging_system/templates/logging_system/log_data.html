@@ -23,6 +23,7 @@
             <th>Operator</th>
             <th>Log Start (UTC)</th>
             <th>Log End (UTC)</th>
+            <th>Instrument</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -34,6 +35,7 @@
             <td>{{ log.operator_name }}</td>
             <td>{{ log.log_start_time_utc }}</td>
             <td>{{ log.log_end_time_utc }}</td>
+            <td>{{ log.instrument_name }}</td>
             <td>
                 <!-- Assuming you have a session detail view -->
                 <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
