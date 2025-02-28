@@ -5,12 +5,29 @@
 
 <form method="get" class="mb-3">
     <!-- Basic query field -->
-    <input type="text" name="q" value="{{ query }}" placeholder="Search by Session ID or Operator"
-        class="form-control" />
+    <input type="text" name="session_id" value="{{ session_id }}" placeholder="Search by Session ID"
+        class="form-control mb-2" />
+
+    <!-- Collapsible Advanced Search Section -->
+    <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+        Advanced Search ▼
+    </button>
 
     <!-- Advanced date filter field -->
-    <input type="date" name="date" value="{{ date_filter }}" placeholder="Filter by Log Start Date (UTC)"
-        class="form-control mt-2" />
+    <div id="advancedSearch" class="collapse">
+        <input type="text" name="operator_name" value="{{ operator_name }}" placeholder="Search by Operator Name"
+            class="form-control mb-2 mt-3" />
+
+        <input type="text" name="instrument_name" value="{{ instrument_name }}" placeholder="Search by Instrument Name"
+            class="form-control mb-2" />
+
+        <input type="text" name="target_name" value="{{ target_name }}" placeholder="Search by Target Name"
+            class="form-control mb-2" />
+
+        <input type="date" name="date" value="{{ date_filter }}" placeholder="Filter by Log Start Date (UTC)"
+            class="form-control mb-2" />
+    </div>
+
 
     <button type="submit" class="btn btn-primary mt-2">Search</button>
 </form>
@@ -27,6 +44,7 @@
             <th>Actions</th>
         </tr>
     </thead>
+
     <tbody>
         {% for log in logs %}
         <tr>
@@ -35,9 +53,8 @@
             <td>{{ log.operator_name }}</td>
             <td>{{ log.log_start_time_utc }}</td>
             <td>{{ log.log_end_time_utc }}</td>
-            <td>{{ log.instrument_name }}</td>
+            <td>{{ log.instrumentation.instrument_name }}</td>
             <td>
-                <!-- Assuming you have a session detail view -->
                 <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
             </td>
         </tr>
@@ -48,4 +65,6 @@
         {% endfor %}
     </tbody>
 </table>
+
+
 {% endblock %}

@@ -43,12 +43,12 @@ class EnvironmentalConditionForm(forms.ModelForm):
         label="Wind Speed (m/s)",
         widget=forms.NumberInput(attrs={'step': '0.1'}),
     )
-    seeing = forms.FloatField(
-        label="Seeing (arcsec)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
     cloud_cover = forms.FloatField(
         label="Cloud Cover (%)",
+        widget=forms.NumberInput(attrs={'step': '0.1'}),
+    )
+    seeing = forms.FloatField(
+        label="Seeing (arcsec)",
         widget=forms.NumberInput(attrs={'step': '0.1'}),
     )
 # Observation Form

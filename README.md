@@ -60,6 +60,7 @@ Access the Telescope Logging System at:
 | `POST` | `/log/end` | End an observation session |
 | `GET`  | `/logs` | Retrieve all logs |
 | `GET`  | `/log/{id}` | Retrieve a specific log entry |
+| `DELETE` | `/delete/{session_id}` | Delete a specific log entry |
 
 Use [FastAPI Swagger UI](http://127.0.0.1:8000/docs) for API testing.
 

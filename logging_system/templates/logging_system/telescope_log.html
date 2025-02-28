@@ -5,93 +5,117 @@
 <form method="post">
     {% csrf_token %}
 
+
+    <!-- First Row (General & Instrumentaion)-->
     <div class="row">
         <!-- General Information -->
         <div class="col-md-6">
-            <h5>General Information</h5>
+            <h4>General Information</h4>
             {{ general_form|crispy }}
-
-            <div class="form-group row mt-3">
-                <div class="col-md-6">
-                    <label for="log_start_time_display">Log Start Time (UTC)</label>
-                    <input type="text" id="log_start_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
-                </div>
-                <div class="col-md-6">
-                    <label for="log_start_time_display_lst">Log Start Time (LST)</label>
-                    <input type="text" id="log_start_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
-                        value="">
-                </div>
-            </div>
-
-            <div class="form-group row mt-3">
-                <div class="col-md-6">
-                    <label for="log_end_time_display">Log End Time (UTC)</label>
-                    <input type="text" id="log_end_time_display" class="form-control mt-2 mb-3 p-2" readonly value="">
-                </div>
-                <div class="col-md-6">
-                    <label for="log_end_time_display_lst">Log End Time (LST)</label>
-                    <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
-                        value="">
-                </div>
-            </div>
-
-            <!-- Display Real-Time LST (Without Saving) -->
-            <label for="lst_time_display">Locat Sidereal Time (LST)</label>
-            <input type="text" id="lst_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ lst_time }}">
-
-            <!-- Display Real-Time UTC Time (Without Saving) -->
-            <label for="utc_time_display">Coordinated Universal Time (UTC)</label>
-            <input type="text" id="utc_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ utc_time }}">
-
-            <button type="button" name="start_log" class="btn btn-primary" onclick="startLog()">Start Log</button>
-            <button type="button" name="end_log" id="end_log_button" class="btn btn-danger" disabled
-                onclick="endLog()">End Log</button>
-
-        </div>
-
-        <!-- Environmental Condition -->
-        <div class="col-md-6">
-            <h5>Weather Condition</h5>
-            {{ env_form|crispy }}
-        </div>
-
-
-
-    </div>
-
-
-    <div class="row mt-3">
-        <!-- Observation Parameters -->
-        <div class="col-md-4">
-            <h5>Observation Parameters</h5>
-            {{ observation_form|crispy }}
-        </div>
-
-        <!-- Telescope Configuration -->
-        <div class="col-md-4">
-            <h5>Telescope Configuration</h5>
-            {{ telescope_form|crispy }}
         </div>
 
         <!-- Instrumentation -->
-        <div class="col-md-4">
-            <h5>Instrumentation</h5>
+        <div class="col-md-6">
+            <h4>Instrumentation</h4>
             {{ instrumentation_form|crispy }}
         </div>
+
     </div>
 
+    <!-- Second Row (Observation & Enviroment & Telescope Configuration)-->
     <div class="row mt-3">
-        <!-- Remote Operation -->
-        <div class="col-md-6">
-            <h5>Remote Operation Network Status</h5>
-            {{ remote_form|crispy }}
+        <!-- Observation Parameters -->
+        <div class="col-md-4">
+            <h4>Observation Parameters</h4>
+            {{ observation_form|crispy }}
         </div>
 
-        <div class="col-md-6">
-            <h5>Comment</h5>
+        <!-- Environmental Condition -->
+        <div class="col-md-4">
+            <h4>Weather Condition</h4>
+            {{ env_form|crispy }}
+
+            <button type="button" id="getWeatherBtn" class="btn btn-info mt-2">Get Weather Data</button>
+        </div>
+
+
+        <!-- Telescope Configuration -->
+        <div class="col-md-4">
+            <h4>Telescope Configuration</h4>
+            {{ telescope_form|crispy }}
+
+            <div class="mt-5">
+                <h4>Remote Operation Network Status</h4>
+                {{ remote_form|crispy }}
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Third Row (Comments)-->
+    <div class="row mt-3">
+        <!-- Comments -->
+        <div class="col-md-12">
+            <h4>Comment</h4>
             {{ comment_form|crispy }}
         </div>
+
     </div>
+
+    <!-- Fourth Row (Log time fields)-->
+    <div class="row mt-3">
+        <!-- Log Time Fields-->
+        <div class="col-md-12">
+            <h4>Log Time</h4>
+            <div class="form-group row mt-3">
+
+                <!-- Log Start Time-->
+                <div class="col-md-3">
+                    <label for="log_start_time_display">Log Start Time (UTC)</label>
+                    <input type="text" id="log_start_time_display" class="form-control mt-2 mb-3 p-2" readonly value=""
+                        data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                    <label class="mt-3" for="log_start_time_display_lst">Log Start Time (LST)</label>
+                    <input type="text" id="log_start_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
+                        value="" data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                    <button type="button" name="start_log" class="btn btn-primary mt-3" onclick="startLog()">Start
+                        Log</button>
+                </div>
+
+                <!-- Real-Time Fields-->
+                <div class="col-md-6">
+                    <!-- Display Real-Time UTC Time (Without Saving) -->
+                    <label for="utc_time_display">Coordinated Universal Time (UTC)</label>
+                    <input type="text" id="utc_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ utc_time }}"
+                        data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                    <!-- Display Real-Time LST (Without Saving) -->
+                    <label class="mt-3" for="lst_time_display">Locat Sidereal Time (LST)</label>
+                    <input type="text" id="lst_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ lst_time }}"
+                        data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                </div>
+
+                <!-- Log End Time-->
+                <div class="col-md-3">
+                    <label for="log_end_time_display">Log End Time (UTC)</label>
+                    <input type="text" id="log_end_time_display" class="form-control mt-2 mb-3 p-2" readonly value=""
+                        data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                    <label class="mt-3" for="log_end_time_display_lst">Log End Time (LST)</label>
+                    <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
+                        value="" data-bs-toggle="tooltip" title="This field cannot be edited manually.">
+
+                    <button type="button" name="end_log" id="end_log_button" class="btn btn-danger mt-3" disabled
+                        onclick="endLog()">End Log</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
     <div class="text-center mt-4">
         <button type="submit" class="btn btn-primary">Save Log</button>
@@ -100,6 +124,7 @@
 
 
 <script>
+
     const socket = new WebSocket("ws://" + window.location.host + "/ws/lst/");
 
     socket.onopen = function () {
@@ -126,6 +151,7 @@
             location.reload(); // Reload page to reconnect
         }, 5000);
     };
+
     function startLog() {
         // Get the current UTC and LST values updated via the WebSocket
         const currentUTC = document.getElementById("utc_time").value;
@@ -153,6 +179,28 @@
         document.getElementById("id_log_end_time_lst").value = currentLST;
     }
 
+    document.getElementById("getWeatherBtn").addEventListener("click", function () {
+        fetch("/get-weather-data/")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Weather Data Received:", data);  // Debugging Log
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    // Ensure we target the correct field IDs
+                    let tempField = document.getElementById("id_temperature");
+                    let humidityField = document.getElementById("id_humidity");
+                    let windField = document.getElementById("id_wind_speed");
+                    let cloudField = document.getElementById("id_cloud_cover");
+
+                    if (tempField) tempField.value = data.temperature;
+                    if (humidityField) humidityField.value = data.humidity;
+                    if (windField) windField.value = data.wind_speed;
+                    if (cloudField) cloudField.value = data.cloud_cover;
+                }
+            })
+            .catch(error => console.error("Error fetching weather data:", error));
+    });
 
 </script>
 

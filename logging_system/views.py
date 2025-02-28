@@ -1,14 +1,20 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
     ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm
 )
+import os
 from .models import GeneralInfo
+import requests
+from django.http import JsonResponse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Create your views here.
 
+# Main form view
 def telescope_log_view(request):
 
     if request.method == 'POST':
@@ -74,12 +80,35 @@ def telescope_log_view(request):
         'comment_form': comment_form,
     })
 
+def fetch_weather_data(request):
+    """Fetch weather data from API and return JSON response."""
+    api_key = os.getenv("Weather_API")
+    url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q=24.6528,72.7794"
+    
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return JsonResponse({
+            "temperature": data['current']['temp_c'],
+            "humidity": data['current']['humidity'],
+            "wind_speed": round(data['current']['wind_kph'] / 3.6, 2),
+            "cloud_cover": data['current']['cloud']
+        })
+    else:
+        return JsonResponse({"error": "Failed to fetch weather data"}, status=500)
+
+# Success view upon submitting form
 def success_view(request):
     return render(request, 'logging_system/success.html')
 
+
+# Logs Webpage
 def log_data_view(request):
 
-    query = request.GET.get('q')
+    session_id = request.GET.get('session_id', '')
+    operator_name = request.GET.get('operator_name', '')
+    instrument_name = request.GET.get('instrument_name', '')
+    target_name = request.GET.get('target_name', '')
     date_filter = request.GET.get('date', '')
 
     # Retrieve all log entries, ordering by the latest start time first
@@ -96,23 +125,38 @@ def log_data_view(request):
         )
     )
 
-    if query:
-        logs = logs.filter( 
-            Q(session_id__icontains=query) |
-            Q(operator_name__icontains=query)
-            )
+    filters = Q()
+
+    if session_id:
+        filters &= Q(session_id__icontains=session_id)
     
+    if operator_name:
+        filters &= Q(operator_name__icontains=operator_name)
+
+    if instrument_name:
+        filters &= Q(instrumentation__instrument_name__icontains=instrument_name)
+
+    if target_name:
+        filters &= Q(observation__target_name__icontains=target_name)
+
     if date_filter:
-        logs = logs.filter(log_start_time_utc__date=date_filter)
+        filters &= Q(log_start_time_utc__date=date_filter)
+
+    logs = logs.filter(filters)
 
     context = {
         'logs': logs,
-        'query': query,
+        'session_id': session_id,
+        'operator_name': operator_name,
+        'instrument_name': instrument_name,
+        'target_name': target_name,
         'date_filter': date_filter,
     }
 
     return render(request, 'logging_system/log_data.html', context)
 
+
+# detailed view of logs
 def session_detail_view(request, session_id):
     # Retrieve the main GeneralInfo record using the unique session_id.
     general = get_object_or_404(GeneralInfo, session_id=session_id)
@@ -136,3 +180,8 @@ def session_detail_view(request, session_id):
         'comments': comments,
     }
     return render(request, 'logging_system/session_detail.html', context)
+
+def delete_log_view(request, session_id):
+    log_entry = get_object_or_404(GeneralInfo, session_id=session_id)
+    log_entry.delete()
+    return redirect('log_data')
