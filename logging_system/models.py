@@ -1,26 +1,29 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
-
+# General Information
 class GeneralInfo(models.Model):
     TELESCOPE_CHOICES = [
-        ('TARA (1.2mm)','TARA (1.2mm)'),
-        ('BHARMA (2.5mm)','BHARMA (2.5mm)')
+        ('TARA (1.2meter)','TARA (1.2meter)'),
+        ('BHARMA (2.5meter)','BHARMA (2.5meter)')
     ]
     
     OBSERVATORY_CHOICES = [
         ('PRL Mount Abu Observatory','PRL Mount Abu Observatory')
     ]
 
-    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2mm)')
+    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
     observatory_name = models.CharField(max_length=100, choices=OBSERVATORY_CHOICES, default='PRL Mount Abu Observatory')
-    operator_name = models.CharField(max_length=100)
+    telescope_operator = models.CharField(max_length=100)
+    observer_name = models.ForeignKey(User, on_delete=models.PROTECT)
     session_id = models.CharField(max_length=50, unique=True)
     log_start_time_lst = models.DateTimeField(blank=False, null=False, unique=True)
     log_start_time_utc = models.DateTimeField(blank=False, null=False)
     log_end_time_lst = models.DateTimeField(blank=False,  null=False, unique=True)
     log_end_time_utc = models.DateTimeField(blank=False, null=False)
+
 
 
 # Environmental Conditions
@@ -35,7 +38,7 @@ class EnvironmentalCondition(models.Model):
     humidity = models.FloatField()
     wind_speed = models.FloatField()
     seeing = models.FloatField()
-    cloud_cover = models.FloatField()
+    cloud_coverage = models.CharField(max_length=20)
     MOON_PHASES = [('New Moon', 'New Moon'), ('Full Moon', 'Full Moon'), ('First Quarter', 'First Quarter'), ('Last Quarter', 'Last Quarter')]
     moon_phase = models.CharField(max_length=20, choices=MOON_PHASES, default='New Moon')
 
@@ -49,6 +52,7 @@ class Observation(models.Model):
     )
 
     target_name = models.CharField(max_length=100)
+    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp')], default='Bias')
     right_ascension = models.TimeField(max_length=50)
     declination = models.CharField(max_length=50)
     air_mass = models.FloatField()

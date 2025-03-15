@@ -9,21 +9,16 @@
     <!-- First Row (General & Instrumentaion)-->
     <div class="row">
         <!-- General Information -->
-        <div class="col-md-6">
+        <div class="col-md-4">
             <h4>General Information</h4>
+            <div class="form-group">
+                <label class="mb-2" for="observer_name">Observer Name:</label>
+                <input type="text" id="observer_name" class="form-control mb-3" value="{{ request.user.username }}"
+                    readonly>
+            </div>
             {{ general_form|crispy }}
         </div>
 
-        <!-- Instrumentation -->
-        <div class="col-md-6">
-            <h4>Instrumentation</h4>
-            {{ instrumentation_form|crispy }}
-        </div>
-
-    </div>
-
-    <!-- Second Row (Observation & Enviroment & Telescope Configuration)-->
-    <div class="row mt-3">
         <!-- Observation Parameters -->
         <div class="col-md-4">
             <h4>Observation Parameters</h4>
@@ -38,25 +33,39 @@
             <button type="button" id="getWeatherBtn" class="btn btn-info mt-2">Get Weather Data</button>
         </div>
 
+    </div>
+
+    <!-- Second Row (Observation & Enviroment & Telescope Configuration)-->
+    <div class="row mt-4">
+
+        <!-- Instrumentation -->
+        <div class="col-md-6">
+            <h4>Instrumentation</h4>
+            {{ instrumentation_form|crispy }}
+        </div>
+
 
         <!-- Telescope Configuration -->
-        <div class="col-md-4">
+        <div class="col-md-6">
             <h4>Telescope Configuration</h4>
             {{ telescope_form|crispy }}
-
-            <div class="mt-5">
-                <h4>Remote Operation Network Status</h4>
-                {{ remote_form|crispy }}
-            </div>
         </div>
 
 
     </div>
 
     <!-- Third Row (Comments)-->
-    <div class="row mt-3">
+    <div class="row mt-4">
+
+        <!-- Remote Operation Network Status -->
+        <div class="col-md-6">
+            <h4>Remote Operation Network Status</h4>
+            {{ remote_form|crispy }}
+        </div>
+
+
         <!-- Comments -->
-        <div class="col-md-12">
+        <div class="col-md-6">
             <h4>Comment</h4>
             {{ comment_form|crispy }}
         </div>
@@ -64,7 +73,7 @@
     </div>
 
     <!-- Fourth Row (Log time fields)-->
-    <div class="row mt-3">
+    <div class="row mt-4">
         <!-- Log Time Fields-->
         <div class="col-md-12">
             <h4>Log Time</h4>
@@ -119,6 +128,7 @@
 
     <div class="text-center mt-4">
         <button type="submit" class="btn btn-primary">Save Log</button>
+        <button type="submit" name="download_pdf" class="btn btn-success">Save & Download Logs</button>
     </div>
 </form>
 

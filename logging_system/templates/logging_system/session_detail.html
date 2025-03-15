@@ -20,7 +20,11 @@
                     </tr>
                     <tr>
                         <th>Operator</th>
-                        <td>{{ general.operator_name }}</td>
+                        <td>{{ general.telescope_operator }}</td>
+                    </tr>
+                    <tr>
+                        <th>Observer</th>
+                        <td>{{ general.observer_name }}</td>
                     </tr>
                     <tr>
                         <th>Log Start (UTC)</th>
@@ -66,7 +70,7 @@
                     </tr>
                     <tr>
                         <th>Cloud Cover</th>
-                        <td>{{ environmental_condition.cloud_cover }}</td>
+                        <td>{{ environmental_condition.cloud_coverage }}</td>
                     </tr>
                     <tr>
                         <th>Moon Phase</th>
@@ -204,4 +208,5 @@
 </div>
 
 <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
+<a href="{% url 'download_pdf' general.session_id %}" class="btn btn-success mt-4">Download as PDF</a>
 {% endblock %}

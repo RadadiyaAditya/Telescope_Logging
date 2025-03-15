@@ -9,6 +9,7 @@ class GeneralInfoForm(forms.ModelForm):
     class Meta:
         model = GeneralInfo
         fields = '__all__'
+        exclude = ['observer_name']
         widgets = {
             # these parameters are in database but will be hidden on webapp
             'log_start_time_utc': forms.HiddenInput(),
@@ -40,11 +41,7 @@ class EnvironmentalConditionForm(forms.ModelForm):
         widget=forms.NumberInput(attrs={'step': '0.1'}),
     )
     wind_speed = forms.FloatField(
-        label="Wind Speed (m/s)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
-    cloud_cover = forms.FloatField(
-        label="Cloud Cover (%)",
+        label="Wind Speed (km/s)",
         widget=forms.NumberInput(attrs={'step': '0.1'}),
     )
     seeing = forms.FloatField(

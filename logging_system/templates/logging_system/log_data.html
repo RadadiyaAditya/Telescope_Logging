@@ -38,9 +38,12 @@
             <th>Session ID</th>
             <th>Telescope</th>
             <th>Operator</th>
-            <th>Log Start (UTC)</th>
-            <th>Log End (UTC)</th>
+            <th>Observer</th>
+            <th>Log Start Time(UTC)</th>
+            <th>Log Date</th>
             <th>Instrument</th>
+            <th>Exposure Time</th>
+            <th>Target Object</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -50,10 +53,13 @@
         <tr>
             <td>{{ log.session_id }}</td>
             <td>{{ log.telescope_name }}</td>
-            <td>{{ log.operator_name }}</td>
-            <td>{{ log.log_start_time_utc }}</td>
-            <td>{{ log.log_end_time_utc }}</td>
+            <td>{{ log.telescope_operator }}</td>
+            <td>{{ log.observer_name }}</td>
+            <td>{{ log.log_start_time_utc|time:"h:i:s A" }}</td>
+            <td>{{ log.log_start_time_utc|date:"D, d M Y" }}</td>
             <td>{{ log.instrumentation.instrument_name }}</td>
+            <td>{{ log.instrumentation.exposure_time }}</td>
+            <td>{{ log.observation.target_name }}</td>
             <td>
                 <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
             </td>

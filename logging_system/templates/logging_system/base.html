@@ -51,12 +51,47 @@
                             <a class="nav-link" href="{% url 'log_data' %}">Logs</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Profile
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li>
+                                    <span class="dropdown-item-text"><strong>Username:</strong>
+                                        {{ user.username }}
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="dropdown-item-text"><strong>Role:</strong>
+                                        {{ user.profile.role}}
+                                    </span>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <form action="{% url 'logout' %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item nav-link">Logout</button>
+                            </form>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </nav>
 
 
-        <div class="container mt-4">
+        <div class=" container mt-4">
 
             <!-- Heading with Logo -->
             <div class="d-flex justify-content-center align-items-center mb-3">
@@ -70,7 +105,13 @@
 
             <h2 class="text-center mt-5">Telescope Logging System</h2>
             <hr class="mb-5">
-
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
             {% block content %}{% endblock %}
         </div>
 
