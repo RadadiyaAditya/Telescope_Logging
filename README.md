@@ -21,102 +21,102 @@ A **web-based Telescope Logging System** built with **Django (Framework)** and *
 
 ## Diagram
 ```mermaid
-flowchart TB;
+%% A custom initialization block for a pastel-lavender background
+%% (May not always display on GitHub, but works in Mermaid Live Editor or custom setups)
+%%{init: {'theme': 'default', 'themeVariables': { 'background': '#F3E5F5'}}}%%
+
+flowchart TD
     %% Client
-    Client["🌐 Client Browser"]:::client
+    Client("Client Browser"):::client
 
     %% Frontend
-    Frontend["🎨 Frontend UI (Django Templates)"]:::frontend
+    Frontend("Frontend UI (Django Templates)"):::frontend
 
     %% Real-time Communication
-    Realtime["🔄 Real-Time Communication Manager"]:::realtime
+    Realtime("Real-Time Communication Manager"):::realtime
 
     %% API Endpoints
-    APIGateway["🔌 API Gateway (FastAPI)"]:::api
+    APIGateway("API Gateway (FastAPI)"):::api
 
     %% Backend Application Server
-    Backend["💾 Backend Application Server"]:::backend
+    Backend("Backend Application Server"):::backend
 
     %% Database
-    DB["🗄️ Database (SQLite/PostgreSQL)"]:::database
+    DB("Database (SQLite/PostgreSQL)"):::database
 
     %% Django Project Setup subgraph
-    subgraph "🛠️ Django Project Setup" [Django Project Setup]
-        direction LR
-        managePy["⚙️ manage.py"]:::config
-        settings["🔧 Settings"]:::config
-        urls["🌐 URLs"]:::config
-        asgi["🔗 ASGI"]:::config
-        wsgi["🔗 WSGI"]:::config
+    subgraph "Django Project Setup"
+        managePy("manage.py"):::config
+        settings("Settings"):::config
+        urls("URLs"):::config
+        asgi("ASGI"):::config
+        wsgi("WSGI"):::config
     end
 
     %% Logging System Application subgraph
-    subgraph "📜 Logging System App" [Logging System App]
-        direction TB
-        models["📂 Models"]:::backend
-        views["👀 Views"]:::backend
-        forms["📝 Forms"]:::backend
-        admin["🛠️ Admin"]:::backend
-        tests["🧪 Tests"]:::backend
-        migrations["🗂️ Migrations"]:::backend
-        consumers["📡 Consumers"]:::backend
-        lst["📊 LST Calculations"]:::backend
-        templates["🎭 Templates"]:::frontend
+    subgraph "Logging System App"
+        forms("Forms"):::backend
+        views("Views"):::backend
+        consumers("Consumers"):::backend
+        models("Models"):::backend
+        templates("Templates"):::frontend
+        lst("LST Calculations"):::backend
+        admin("Admin"):::backend
+        tests("Tests"):::backend
+        migrations("Migrations"):::backend
     end
 
     %% Relationships between high-level components
-    Client -->|"HTTP"| Frontend
-    Client -->|"REST"| APIGateway
-    Client -->|"WebSocket"| Realtime
+    Client -->|"HTTP Request"| Frontend
+    Client -->|"REST API Calls"| APIGateway
+    Client -->|"WebSocket Connection"| Realtime
 
-    Frontend -->|"renders"| Backend
-    Backend -->|"persists"| DB
+    Frontend -->|"Renders Data"| Backend
+    Backend -->|"Stores Data"| DB
 
     %% Integration of configuration into backend and real-time
     managePy --> Backend
     settings --> Backend
     urls --> Backend
-    asgi -- "configures" --> Realtime
+    asgi -- "Configures WebSocket" --> Realtime
     wsgi --> Backend
 
     %% Internal relationships within Logging System App
-    views -->|"uses"| models
+    views -->|"Uses"| models
     forms --> views
-    views -->|"renders"| templates
-    consumers -->|"calculates"| lst
+    views -->|"Renders"| templates
+    consumers -->|"Performs Calculations"| lst
 
     %% Connect API layer to configuration (defining endpoints)
     urls --> APIGateway
 
-    %% Styles for Better Readability
-    classDef client fill:#FFD700,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef frontend fill:#ADD8E6,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef realtime fill:#98FB98,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef backend fill:#FFB6C1,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef database fill:#FFFACD,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef config fill:#D3D3D3,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
-    classDef api fill:#FFA07A,stroke:#333,stroke-width:2px,font-size:16px,color:#000;
+    %% Pastel Styles for a Light Theme
+    classDef client fill:#FFE4E1,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef frontend fill:#CFE2F3,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef realtime fill:#D9EAD3,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef backend fill:#F4CCCC,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef database fill:#FFF2CC,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef config fill:#EEEEEE,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    classDef api fill:#F9C0C0,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
 
-    %% Clickable Links for Django Project Setup
-    click managePy "https://github.com/yourusername/telescope_logging/blob/main/manage.py"
-    click settings "https://github.com/yourusername/telescope_logging/blob/main/telescope_log/settings.py"
-    click urls "https://github.com/yourusername/telescope_logging/blob/main/telescope_log/urls.py"
-    click asgi "https://github.com/yourusername/telescope_logging/blob/main/telescope_log/asgi.py"
-    click wsgi "https://github.com/yourusername/telescope_logging/blob/main/telescope_log/wsgi.py"
+    %% Clickable GitHub Links (with tooltips)
+    click managePy "https://github.com/radadiyaaditya/telescope_logging/blob/main/manage.py" "Django Management Script"
+    click settings "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/settings.py" "Django Settings"
+    click urls "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/urls.py" "Django URL Configurations"
+    click asgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/asgi.py" "Django ASGI Config"
+    click wsgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/wsgi.py" "Django WSGI Config"
 
-    %% Clickable Links for Logging System Application
-    click models "https://github.com/yourusername/telescope_logging/blob/main/logging_system/models.py"
-    click views "https://github.com/yourusername/telescope_logging/blob/main/logging_system/views.py"
-    click forms "https://github.com/yourusername/telescope_logging/blob/main/logging_system/forms.py"
-    click admin "https://github.com/yourusername/telescope_logging/blob/main/logging_system/admin.py"
-    click tests "https://github.com/yourusername/telescope_logging/blob/main/logging_system/tests.py"
-    click migrations "https://github.com/yourusername/telescope_logging/tree/main/logging_system/migrations/"
-    click consumers "https://github.com/yourusername/telescope_logging/blob/main/logging_system/consumers.py"
-    click templates "https://github.com/yourusername/telescope_logging/tree/main/logging_system/templates/logging_system/"
-    click lst "https://github.com/yourusername/telescope_logging/blob/main/logging_system/lst.py"
+    click models "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/models.py" "Django Models"
+    click views "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/views.py" "Django Views"
+    click forms "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/forms.py" "Django Forms"
+    click admin "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/admin.py" "Django Admin Panel"
+    click tests "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/tests.py" "Django Test Cases"
+    click migrations "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/migrations/" "Django Migrations"
+    click consumers "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/consumers.py" "Django WebSockets Consumers"
+    click templates "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/templates/logging_system/" "Django Templates"
+    click lst "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/lst.py" "Local Sidereal Time Calculations"
 
-    %% Click Event for API Endpoints Integration
-    click APIGateway "https://github.com/yourusername/telescope_logging/blob/main/README.md"
+    click APIGateway "https://github.com/radadiyaaditya/telescope_logging/blob/main/README.md" "FastAPI Gateway"
 ```
 
 ## Installation
