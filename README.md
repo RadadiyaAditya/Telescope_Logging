@@ -126,4 +126,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) f
 - [Django](https://www.djangoproject.com/)
 - [Bootstrap](https://getbootstrap.com/)
 - [wkhtmltopdf](https://wkhtmltopdf.org/)
-
