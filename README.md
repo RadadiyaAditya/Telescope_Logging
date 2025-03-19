@@ -1,94 +1,129 @@
-# 🔭 Telescope Logging System
+# Telescope Log Web Application
 
-A **web-based Telescope Logging System** built with **Django (Framework)** and **PostrgreSQL (Database)** to facilitate **astronomical observation logging**. This system records essential observational data, including start and end timestamps, telescope configurations, environmental conditions, and instrumentation details.
+## Overview
 
+The Telescope Log Web Application is a Django-based project designed to manage and log telescope observations. It includes features such as user authentication, real-time updates using Django Channels, and PDF report generation.
 
-## 🚀 Features
+## Features
 
-- **Log Observations** with Start & End Times (UTC &LST)
-- **Database Integration** using PostgreSQL(Deployment) & SQLite (Profuction)
-- **Django Templates for UI**
-- **WebSocket for Live Data Streaming**
-- **Real-time LST & UTC Updates**
+- User authentication and management
+- Real-time updates with Django Channels
+- PDF report generation using `pdfkit`
+- Responsive design with Bootstrap 5
 
+## Installation
 
-## ⚙️ Tech Stack
+### Prerequisites
 
-- **Backend:** Django 🚀
-- **Frontend:** HTML, CSS, JavaScript, Django Templates
-- **Database:** PostgreSQL / SQLite
-- **Real-time Communication:** Django Channels (WebSockets)
-- **Version Control:** Git & GitHub
+- Python 3.8+
+- PostgreSQL
+- wkhtmltopdf
 
-## Diagram
-![Project Diagram](assets/diagram.png)
+### Setup
 
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/yourusername/telescope_log_webapp.git
+    cd telescope_log_webapp
+    ```
 
-## 🛠️ Installation
+2. Create and activate a virtual environment:
+    ```sh
+    python -m venv venv
+    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    ```
 
-### 1️. Clone the Repository
+3. Install the required packages:
+    ```sh
+    pip install -r requirements.txt
+    ```
 
-```bash
-  git clone https://github.com/RadadiyaAditya/Telescope_Logging.git
-  cd Telescope_Logging
+4. Set up the PostgreSQL database and update the `.env` file with your database credentials:
+    ```
+    DATABASE_NAME=your_db_name
+    DATABASE_USER=your_db_user
+    DATABASE_PASSWORD=your_db_password
+    DATABASE_HOST=your_db_host
+    DATABASE_PORT=your_db_port
+    ```
+
+5. Apply the database migrations:
+    ```sh
+    python manage.py migrate
+    ```
+
+6. Collect static files:
+    ```sh
+    python manage.py collectstatic
+    ```
+
+7. Run the development server:
+    ```sh
+    python manage.py runserver
+    ```
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory and add the following environment variables:
+
 ```
-### 2. Virtual Enviroment Setup
-
-```bash
-  python -m venv venv
-  source venv/bin/activate  # On macOS/Linux
-  venv\Scripts\activate # On Windows
+DJANGO_SECRET_KEY=your_secret_key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_NAME=your_db_name
+DATABASE_USER=your_db_user
+DATABASE_PASSWORD=your_db_password
+DATABASE_HOST=your_db_host
+DATABASE_PORT=your_db_port
 ```
-### 3. Install Dependencies
 
-```bash
-  pip install -r requirements.txt
+### PDFKit Configuration
+
+Ensure `wkhtmltopdf` is installed and update the `WKHTMLTOPDF_PATH` in `settings.py`:
+
+```python
+WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 ```
-### 4. Start Server
 
-```bash
-  daphne -b 0.0.0.0 -p 8000 telescope_log.asgi:application
+## Usage
+
+### Running the Server
+
+To start the server, run:
+
+```sh
+python manage.py runserver
 ```
-Access the Telescope Logging System at:
-👉 http://127.0.0.1:8000/
 
+### Accessing the Application
 
-## 🖥️ API Endpoints
-| Method | Endpoint | Description |
-|--------|---------|-------------|
-| `POST` | `/log/start` | Start an observation session |
-| `POST` | `/log/end` | End an observation session |
-| `GET`  | `/logs` | Retrieve all logs |
-| `GET`  | `/log/{id}` | Retrieve a specific log entry |
-| `DELETE` | `/delete/{session_id}` | Delete a specific log entry |
+Open your web browser and navigate to `http://127.0.0.1:8000/`.
 
-Use [FastAPI Swagger UI](http://127.0.0.1:8000/docs) for API testing.
+### Admin Interface
 
----
+Access the Django admin interface at `http://127.0.0.1:8000/admin/`. Use the superuser credentials created during the setup.
 
-## 🎯 Future Enhancements
-- 🔹 **Authentication & User Management**
-- 🔹 **Data Export (CSV, JSON)**
-- 
----
+## Contributing
 
-## 🤝 Contributing
-Feel free to fork this repository and submit pull requests! Contributions are always welcome. 🚀
+Contributions are welcome! Please follow these steps:
 
----
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add new feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Create a new Pull Request.
 
-## 🛡️ License
-This project is licensed under the **MIT License**.
+## License
 
----
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) file for details.
 
-## 📞 Contact
-For any queries, reach out to:  
-👤 **Aditya Radadiya**  
-📧 **adityaradadiya294@gmail.com**  
-🔗 [GitHub Profile](https://github.com/RadadiyaAditya)
+## Acknowledgements
 
----
-
-**Happy Logging! 🌌**
+- [Django](https://www.djangoproject.com/)
+- [Bootstrap](https://getbootstrap.com/)
+- [wkhtmltopdf](https://wkhtmltopdf.org/)
 
