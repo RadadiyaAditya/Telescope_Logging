@@ -108,3 +108,9 @@ class CommentForm(forms.ModelForm):
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 5, 'cols': 40, 'placeholder': 'Enter comments here...'}),
         }
+
+class EmailForm(forms.Form):
+    recipient_email = forms.EmailField(
+        label="Recipient Email",
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter recipient email"})
+    )

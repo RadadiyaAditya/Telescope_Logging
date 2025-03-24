@@ -207,6 +207,15 @@
     {% endif %}
 </div>
 
-<a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
-<a href="{% url 'download_pdf' general.session_id %}" class="btn btn-success mt-4">Download as PDF</a>
+
+<div class="container mb-4">
+    <form method="post" action="{% url 'send_email' general.session_id %}">
+        {% csrf_token %}
+        <label for="recipient_email">Recipient Email:</label>
+        <input type="email" name="recipient_email" required class="form-control">
+        <button type="submit" class="btn btn-primary mt-4">Send PDF via Email</button>
+        <a href="{% url 'download_pdf' general.session_id %}" class="btn btn-primary mt-4">Download as PDF</a>
+        <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
+    </form>
+</div>
 {% endblock %}
