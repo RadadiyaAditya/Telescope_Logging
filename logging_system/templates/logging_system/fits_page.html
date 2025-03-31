@@ -1,0 +1,36 @@
+{% extends 'logging_system/base.html' %}
+
+{% block content %}
+<h2>Upload FITS File & Inject Log Data</h2>
+
+<form method="post" enctype="multipart/form-data" class="mb-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <hr>
+    <h4>Select a Log Entry:</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Session ID</th>
+                <th>Telescope</th>
+                <th>Target</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td><input type="radio" name="selected_log" value="{{ log.session_id }}"></td>
+                <td>{{ log.session_id }}</td>
+                <td>{{ log.telescope_name }}</td>
+                <td>{{ log.observation.target_name }}</td>
+                <td>{{ log.log_start_time_utc|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Inject Data & Download</button>
+</form>
+{% endblock %}

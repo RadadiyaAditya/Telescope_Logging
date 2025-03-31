@@ -125,3 +125,6 @@ class EmailForm(forms.Form):
     recipient_email = forms.CharField(required=False, 
                                        help_text="If you want to send mail to multiple addresses, separate emails with commas.",  
                                        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "example1@gmail.com, example2@gmail.com"}))
+
+class FitsUploadForm(forms.Form):
+    fits_file = forms.FileField(label="Upload FITS File")

@@ -4,7 +4,8 @@ from django.db.models import Q
 from django.contrib import messages
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
-    ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm, EmailForm
+    ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm, EmailForm,
+    FitsUploadForm
 )
 import os
 from .models import GeneralInfo
@@ -12,16 +13,23 @@ import requests
 from django.http import JsonResponse
 from dotenv import load_dotenv
 
+#required for downloading pdf
 from bs4 import BeautifulSoup
 from django.http import FileResponse, HttpResponse
 from django.template.loader import render_to_string
 import pdfkit
 
+#required for sending email
 from django.core.mail import EmailMessage
 from .forms import EmailForm
-
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+
+#required for fits file editing
+import io
+from astropy.io import fits
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 load_dotenv()
 
@@ -443,3 +451,60 @@ def session_detail_view(request, session_id):
         'comments': comments,
     }
     return render(request, 'logging_system/session_detail.html', context)
+
+@login_required
+def fits_view(request):
+    logs = (
+        GeneralInfo.objects.all()
+        .order_by('-log_start_time_utc')
+        .select_related(
+            'environmental_condition',
+            'observation',
+            'telescope_configuration',
+            'instrumentation',
+            'remote_operation',
+            'comments'
+        )
+    )
+
+
+    if request.method == "POST":
+        form = FitsUploadForm(request.POST, request.FILES)
+        session_id = request.POST.get("selected_log")
+
+        if form.is_valid() and session_id:
+            fits_file = request.FILES['fits_file']
+            general = get_object_or_404(GeneralInfo, session_id=session_id)
+
+            # Read and update FITS header
+            with fits.open(fits_file) as hdul:
+                header = hdul[0].header
+                header['SESSION'] = general.session_id
+                header['TELESCOP'] = general.telescope_name
+                header['OBSERVER'] = str(general.observer_name)
+                header['OPERATOR'] = general.telescope_operator
+                header['TARGET'] = general.observation.target_name
+                header['RA'] = general.observation.right_ascension
+                header['DEC'] = general.observation.declination
+                header['INSTRUME'] = general.instrumentation.instrument_name
+                header['EXPTIME'] = general.instrumentation.exposure_time
+
+                # Save new FITS file in buffer-memory
+                updated_data = io.BytesIO()
+                hdul.writeto(updated_data, overwrite=True)
+                updated_data.seek(0)
+
+                response = HttpResponse(updated_data.read(), content_type='application/fits')
+                filename = f"Modified_{general.session_id}.fits"
+                response['Content-Disposition'] = f'attachment; filename="{str(filename)}"'
+                return response
+
+        else:
+            messages.error(request, "Invalid form submission or log not selected.")
+    else:
+        form = FitsUploadForm()
+
+    return render(request, "logging_system/fits_page.html", {
+        "form": form,
+        "logs": logs,
+    })
