@@ -53,7 +53,7 @@ class Observation(models.Model):
 
     target_name = models.CharField(max_length=100)
     calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp')], default='Bias')
-    right_ascension = models.TimeField(max_length=50)
+    right_ascension = models.CharField(max_length=50)
     declination = models.CharField(max_length=50)
     air_mass = models.FloatField()
     magnitude = models.CharField(max_length=50)

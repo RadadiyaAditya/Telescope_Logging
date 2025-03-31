@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.contrib import messages
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
-    ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm
+    ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm, EmailForm
 )
 import os
 from .models import GeneralInfo
@@ -20,6 +20,8 @@ import pdfkit
 from django.core.mail import EmailMessage
 from .forms import EmailForm
 
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 load_dotenv()
 
@@ -37,6 +39,7 @@ def telescope_log_view(request):
         instrumentation_form = InstrumentationForm(request.POST)
         remote_form = RemoteOperationForm(request.POST)
         comment_form = CommentForm(request.POST)
+        email_form = EmailForm(request.POST)
 
 
         if (general_form.is_valid() and env_form.is_valid() and telescope_form.is_valid() and
@@ -58,6 +61,9 @@ def telescope_log_view(request):
             telescope_instance.save()
             
             observation_instance = observation_form.save(commit=False)
+            # Inject cleaned RA/Dec before saving 
+            observation_instance.right_ascension = observation_form.cleaned_data['right_ascension']
+            observation_instance.declination = observation_form.cleaned_data['declination']
             observation_instance.general_info = general_instance
             observation_instance.save()
             
@@ -79,15 +85,14 @@ def telescope_log_view(request):
                 return generate_pdf(request, general_instance.session_id)
             
             if 'send_email' in request.POST:
-                # Retrieve the recipient email from the form
-                recipient_email = request.POST.get('recipient_email')
-                if not recipient_email:
-                    
-                    messages.error(request, "Recipient email is required.")
-                    return redirect('telescope_log')
+                recipient_list = [
+                    "adityaradadiya294@gmail.com",
+                    "adityaradadiya296@gmail.com",
+                    request.user.email
+                ]
 
                 # Generate PDF for the saved log data
-                pdf_path = generate_pdf(request, general_instance.session_id)
+                pdf_path = create_pdf_file(general_instance.session_id)
                 if not pdf_path:
                     messages.error(request, "Failed to generate PDF. Email not sent.")
                     return redirect('telescope_log')
@@ -98,7 +103,7 @@ def telescope_log_view(request):
                 <head></head>
                 <body>
                     <p>Dear User,</p>
-                    <p>Please find attached the telescope log report for your session.</p>
+                    <p>Please find attached the telescope log report for session {general_instance.session_id}.</p>
                     <h3>Session Details:</h3>
                     <ul>
                         <li><strong>Session ID:</strong> {general_instance.session_id}</li>
@@ -118,20 +123,34 @@ def telescope_log_view(request):
 
                 # Attempt to send the email
                 try:
-                    from django.core.mail import EmailMessage
-                    import os
-
+                    email_form = EmailForm(request.POST)
+                    if email_form.is_valid():
+                        additional_email = email_form.cleaned_data.get("recipient_email")
+                        if additional_email:
+                            email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
+                            for email in email_list:
+                                try:
+                                    validate_email(email)
+                                except ValidationError:
+                                    messages.error(request, f"Invalid email address: {email}")
+                                    return redirect('telescope_log')
+                            recipient_list.extend(email_list)
+                    else:
+                        messages.error(request, "Invalid email input.")
+                        return redirect('telescope_log')
+            
                     email = EmailMessage(
-                        subject=f"Telescope Log Report - {general_instance.session_id}",
+                        subject=f"{general_instance.telescope_name} Log - {general_instance.log_start_time_utc.strftime('%d %B %Y')}",
                         body=email_body_html,
                         from_email=os.getenv("EMAIL_HOST_USER"),
-                        to=[recipient_email]
-                    )
+                        to=recipient_list
+                        )
                     email.content_subtype = "html"
                     email.attach_file(pdf_path)
                     email.send()
 
-                    messages.success(request, f"Log Saved & Email Sent Successfully to {recipient_email}.")
+                    messages.success(request, f"Log Saved & Email sent successfully to {', '.join(recipient_list)}.")
+                    return redirect('telescope_log')
                 except Exception as e:
                     messages.error(request, f"Failed to send email: {str(e)}")
 
@@ -148,6 +167,7 @@ def telescope_log_view(request):
         instrumentation_form = InstrumentationForm()
         remote_form = RemoteOperationForm()
         comment_form = CommentForm()
+        email_form = EmailForm()
 
     return render(request, 'logging_system/telescope_log.html', {
         'general_form': general_form,
@@ -157,7 +177,8 @@ def telescope_log_view(request):
         'instrumentation_form': instrumentation_form,
         'remote_form': remote_form,
         'comment_form': comment_form,
-        'session_id': general_instance.session_id if 'send_email' in request.POST else None,
+        'email_form': email_form,
+        'session_id': locals().get('general_instance', None) and general_instance.session_id if 'send_email' in request.POST else None,
     })
 
 def create_pdf_file(session_id):
@@ -206,11 +227,11 @@ def create_pdf_file(session_id):
     'margin-right': '5mm',
     'margin-bottom': '5mm',
     'margin-left': '5mm',
-    'zoom': '0.5',  # Aggressively shrink content
-    'viewport-size': '1920x1080',  # Ensure HTML renders in a widescreen layout
-    'minimum-font-size': '6',  # Reduce font size further
-    'dpi': 400,  # High DPI to maintain clarity despite shrinking
-    'image-dpi': 100,  # Reduce image DPI for better fitting
+    'zoom': '0.5',  
+    'viewport-size': '1920x1080',  
+    'minimum-font-size': '6',  
+    'dpi': 400,  
+    'image-dpi': 100,  
     'disable-smart-shrinking': '',
     }
     config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
@@ -231,11 +252,13 @@ def generate_pdf(request, session_id):
     
 def send_email(request, session_id):
     """Send the generated PDF to a user-defined email."""
-    # Retrieve the recipient email from the form
-    recipient_email = request.POST.get('recipient_email')
-    if not recipient_email:
-        messages.error(request, "Recipient email is required.")
-        return redirect('telescope_log')
+    general = get_object_or_404(GeneralInfo, session_id=session_id)
+    recipient_list = [
+        "adityaradadiya294@gmail.com",
+        "adityaradadiya296@gmail.com",
+        request.user.email
+    ]
+
     
 
     pdf_path = create_pdf_file(session_id)
@@ -249,7 +272,7 @@ def send_email(request, session_id):
     <head></head>
     <body>
         <p>Dear User,</p>
-        <p>Please find attached the telescope log report for your session.</p>
+        <p>Please find attached the telescope log report for your session {general.session_id}.</p>
         <h3>Session Details:</h3>
         <ul>
             <li><strong>Session ID:</strong> {general.session_id}</li>
@@ -266,29 +289,58 @@ def send_email(request, session_id):
     </body>
     </html>
     """
-
     if request.method == "POST":
         form = EmailForm(request.POST)
         if form.is_valid():
-            recipient_email = form.cleaned_data["recipient_email"]
-            email_subject = f"Telescope Log Report - {session_id}"
+            additional_email = form.cleaned_data.get("recipient_email")
+            if additional_email:
+                email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
+                
+                # Validate each email
+                for email in email_list:
+                    try:
+                        validate_email(email)
+                    except ValidationError:
+                        messages.error(request, f"Invalid email address: {email}")
+                        return redirect("session_detail", session_id=session_id)
+                
+                
+                recipient_list.extend(email_list)
+
             try:
                 email = EmailMessage(
-                    subject=email_subject,
+                    subject=f"{general.telescope_name} Log - {general.log_start_time_utc.strftime('%d %B %Y')}",
                     body=email_body_html,
                     from_email=os.getenv("EMAIL_HOST_USER"),
-                    to=[recipient_email]
+                    to=recipient_list
                 )
                 email.content_subtype = "html"
                 email.attach_file(pdf_path)
                 email.send()
-                messages.success(request, f"Email sent successfully to {recipient_email}.")
+
+                messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
+                return redirect("session_detail", session_id=session_id)
             except Exception as e:
-                messages.error(request, f"Failed to send email: {str(e)}")
-            return redirect("session_detail", session_id=session_id)
+                messages.error(request, f"Email sending failed: {str(e)}")
+                return redirect("session_detail", session_id=session_id)
         else:
-            messages.error(request, "Invalid email form submission.")
-    return redirect("session_detail", session_id=session_id)
+            messages.error(request, "Invalid email address provided.")
+
+    else:
+        form = EmailForm()
+
+    # Render page again with the form and session details
+    context = {
+        "form": form,
+        "general": general,
+        "environmental_condition": getattr(general, "environmental_condition", None),
+        "observation": getattr(general, "observation", None),
+        "telescope_configuration": getattr(general, "telescope_configuration", None),
+        "instrumentation": getattr(general, "instrumentation", None),
+        "remote_operation": getattr(general, "remote_operation", None),
+        "comments": getattr(general, "comments", None),
+    }
+    return render(request, "logging_system/session_detail.html", context)
 
 def fetch_weather_data(request):
     """Fetch weather data from API and return JSON response."""

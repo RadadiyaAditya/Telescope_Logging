@@ -22,7 +22,27 @@
         <!-- Observation Parameters -->
         <div class="col-md-4">
             <h4>Observation Parameters</h4>
-            {{ observation_form|crispy }}
+            {{ observation_form.target_name|as_crispy_field }}
+            <div class="form-group">
+                <label class="mb-2">Right Ascension (HH MM SS.ss)</label>
+                <div class="d-flex gap-2 mb-3">
+                    {{ observation_form.ra_hour }}
+                    {{ observation_form.ra_minute }}
+                    {{ observation_form.ra_second }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="mb-2">Declination (±DD MM SS.ss)</label>
+                <div class="d-flex gap-2 mb-3">
+                    {{ observation_form.dec_sign }}
+                    {{ observation_form.dec_degree }}
+                    {{ observation_form.dec_minute }}
+                    {{ observation_form.dec_second }}
+                </div>
+            </div>
+            {{ observation_form.calibration|as_crispy_field }}
+            {{ observation_form.air_mass|as_crispy_field }}
+            {{ observation_form.magnitude|as_crispy_field }}
         </div>
 
         <!-- Environmental Condition -->
@@ -127,14 +147,13 @@
 
 
     <div class="text-center mt-4 mb-5">
-        <div class="form-group mt-4">
-            <label for="recipient_email">Recipient Email:</label>
-            <input type="email" name="recipient_email" class="form-control" placeholder="Enter recipient email">
+        {% if email_form %} <div class="form-group">
+            {{ email_form.recipient_email.label_tag }}
+            {{ email_form.recipient_email }}
+            <small class="form-text text-muted">{{ email_form.recipient_email.help_text }}</small>
         </div>
-        <div class="text-center mt-4 mb-5">
-            <button type="submit" name="send_email" class="btn btn-primary">Save & Email Log</button>
-        </div>
-
+        {% endif %}
+        <button type="submit" name="send_email" class="btn btn-primary">Send PDF via Email</button>
         <button type="submit" name="download_pdf" class="btn btn-primary">Download as PDF</button>
         <button type="submit" class="btn btn-primary">Save Log</button>
     </div>
@@ -205,7 +224,7 @@
                 if (data.error) {
                     alert("Error: " + data.error);
                 } else {
-                    // Ensure we target the correct field IDs
+
                     let tempField = document.getElementById("id_temperature");
                     let humidityField = document.getElementById("id_humidity");
                     let windField = document.getElementById("id_wind_speed");

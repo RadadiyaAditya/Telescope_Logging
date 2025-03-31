@@ -50,23 +50,35 @@ class EnvironmentalConditionForm(forms.ModelForm):
     )
 # Observation Form
 class ObservationForm(forms.ModelForm):
+
+    ra_hour = forms.IntegerField(label="RA Hours", min_value=0, max_value=23, widget=forms.NumberInput(attrs={'placeholder': 'HH', 'class': 'form-control'}))
+    ra_minute = forms.IntegerField(label="RA Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
+    ra_second = forms.DecimalField(label="RA Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
+
+    dec_sign = forms.ChoiceField(label="Declination Sign", choices=[('+', '+'), ('-', '-')], widget=forms.Select(attrs={'class': 'form-control'}))
+    dec_degree = forms.IntegerField(label="Dec Degrees", min_value=0, max_value=90, widget=forms.NumberInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
+    dec_minute = forms.IntegerField(label="Dec Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
+    dec_second = forms.DecimalField(label="Dec Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
     class Meta:
         model = Observation
         fields = '__all__'
-        exclude = ['general_info']
+        exclude = ['general_info', 'right_ascension', 'declination']
 
     target_name = forms.CharField(
         label="Target name (as per SIMBAD)",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
-    right_ascension = forms.TimeField(
-        label="Right Ascension (hh:mm:ss)",
-        widget=forms.TimeInput(attrs={"class": "form-control"}),
-    )
-    declination = forms.CharField(
-        label="Declination (dd:mm:ss)",
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-    )  
+
+    def clean(self):
+        cleaned_data = super().clean()
+        try:
+            ra = f"{cleaned_data['ra_hour']:02} {cleaned_data['ra_minute']:02} {cleaned_data['ra_second']:05.2f}"
+            dec = f"{cleaned_data['dec_sign']}{cleaned_data['dec_degree']:02} {cleaned_data['dec_minute']:02} {cleaned_data['dec_second']:05.2f}"
+            cleaned_data['right_ascension'] = ra
+            cleaned_data['declination'] = dec
+        except KeyError:
+            raise forms.ValidationError("Invalid RA/Dec format.")
+        return cleaned_data
 
 
 # Telescope Configuration Form
@@ -110,7 +122,6 @@ class CommentForm(forms.ModelForm):
         }
 
 class EmailForm(forms.Form):
-    recipient_email = forms.EmailField(
-        label="Recipient Email",
-        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter recipient email"})
-    )
+    recipient_email = forms.CharField(required=False, 
+                                       help_text="If you want to send mail to multiple addresses, separate emails with commas.",  
+                                       widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "example1@gmail.com, example2@gmail.com"}))
