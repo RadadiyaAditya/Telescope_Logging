@@ -167,9 +167,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 LOGIN_REDIRECT_URL = "telescope_log"
 LOGIN_URL = '/login/'
 
-# PDF generation
-WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
 
 # Automated email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

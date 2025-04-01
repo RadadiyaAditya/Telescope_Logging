@@ -15,7 +15,6 @@ class GeneralInfo(models.Model):
     ]
 
     telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
-    observatory_name = models.CharField(max_length=100, choices=OBSERVATORY_CHOICES, default='PRL Mount Abu Observatory')
     telescope_operator = models.CharField(max_length=100)
     observer_name = models.ForeignKey(User, on_delete=models.PROTECT)
     session_id = models.CharField(max_length=50, unique=True)
@@ -52,10 +51,8 @@ class Observation(models.Model):
     )
 
     target_name = models.CharField(max_length=100)
-    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp')], default='Bias')
     right_ascension = models.CharField(max_length=50)
     declination = models.CharField(max_length=50)
-    air_mass = models.FloatField()
     magnitude = models.CharField(max_length=50)
 
 # Telescope Configuration
@@ -70,8 +67,10 @@ class TelescopeConfiguration(models.Model):
     GUIDING_STATUSES = [('Active', 'Active'), ('Passive', 'Passive'), ('Disaled', 'Disabled')]
 
     focus_position = models.FloatField()
+    air_mass = models.FloatField(default=0)
     tracking_mode = models.CharField(max_length=20, choices=TRACKING_MODES, default='Sidereal')
     guiding_status = models.CharField(max_length=20, choices=GUIDING_STATUSES, default='Active')
+    emergency_stop = models.BooleanField(default=False)
 
 # Instrumentation
 class Instrumentation(models.Model):
@@ -86,6 +85,7 @@ class Instrumentation(models.Model):
     INSTRUMENT_NAME = [('PARAS-1', 'PARAS-1'), ('PARAS-2', 'PARAS-2'), ('ProtoPol', 'ProtoPol'), ('LISA', 'LISA'),('EMPOL', 'EMPOL'),('LRS', 'LRS'),('FOSC', 'FOSC')]
     observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
     instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default='PARAS-1')
+    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp')], default='Bias')
     filter_in_use = models.CharField(max_length=10, choices=FILTERS, default='U')
     exposure_time = models.FloatField(default='10')
     polarization_mode = models.BooleanField(default=False)
@@ -100,7 +100,6 @@ class RemoteOperation(models.Model):
 
     remote_access = models.BooleanField(default=False)
     remote_observer = models.CharField(max_length=100, blank=True, null=True)
-    emergency_stop = models.BooleanField(default=False)
 
 class Comments(models.Model):
     general_info = models.OneToOneField(

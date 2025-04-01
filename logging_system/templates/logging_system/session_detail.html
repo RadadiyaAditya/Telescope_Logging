@@ -15,10 +15,6 @@
                         <td>{{ general.telescope_name }}</td>
                     </tr>
                     <tr>
-                        <th>Observatory</th>
-                        <td>{{ general.observatory_name }}</td>
-                    </tr>
-                    <tr>
                         <th>Operator</th>
                         <td>{{ general.telescope_operator }}</td>
                     </tr>
@@ -48,7 +44,7 @@
 
         <div class="col-md-4">
             {% if environmental_condition %}
-            <h4>Weather Conditions</h4>
+            <h4>Weather Parameters</h4>
             <table class="table table-bordered table-striped">
                 <tbody>
                     <tr>
@@ -99,10 +95,6 @@
                         <td>{{ observation.declination }}</td>
                     </tr>
                     <tr>
-                        <th>Air Mass</th>
-                        <td>{{ observation.air_mass }}</td>
-                    </tr>
-                    <tr>
                         <th>Magnitude</th>
                         <td>{{ observation.magnitude }}</td>
                     </tr>
@@ -122,6 +114,10 @@
                     <tr>
                         <th>Focus Position</th>
                         <td>{{ telescope_configuration.focus_position }}</td>
+                    </tr>
+                    <tr>
+                        <th>Air Mass</th>
+                        <td>{{ telescope_configuration.air_mass }}</td>
                     </tr>
                     <tr>
                         <th>Tracking Mode</th>
@@ -148,6 +144,10 @@
                     <tr>
                         <th>Observing Mode</th>
                         <td>{{ instrumentation.observing_mode }}</td>
+                    </tr>
+                    <tr>
+                        <th>Calibration</th>
+                        <td>{{ instrumentation.calibration }}</td>
                     </tr>
                     <tr>
                         <th>Filter</th>
@@ -211,11 +211,11 @@
 <div class="container mb-4">
     <form method="post" action="{% url 'send_email' general.session_id %}">
         {% csrf_token %}
-        {% if form %}
+        {% if email_form %}
         <div class="form-group">
-            {{ form.recipient_email.label_tag }}
-            {{ form.recipient_email }}
-            <small class="form-text text-muted">{{ form.recipient_email.help_text }}</small>
+            {{ email_form.recipient_email.label_tag }}
+            {{ email_form.recipient_email }}
+            <small class="form-text text-muted">{{ email_form.recipient_email.help_text }}</small>
         </div>
         {% endif %}
 

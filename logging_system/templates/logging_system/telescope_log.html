@@ -34,28 +34,51 @@
             <div class="form-group">
                 <label class="mb-2">Declination (±DD MM SS.ss)</label>
                 <div class="d-flex gap-2 mb-3">
-                    {{ observation_form.dec_sign }}
                     {{ observation_form.dec_degree }}
                     {{ observation_form.dec_minute }}
                     {{ observation_form.dec_second }}
                 </div>
             </div>
-            {{ observation_form.calibration|as_crispy_field }}
-            {{ observation_form.air_mass|as_crispy_field }}
             {{ observation_form.magnitude|as_crispy_field }}
         </div>
 
-        <!-- Environmental Condition -->
+        <!-- Weather Parameter -->
         <div class="col-md-4">
-            <h4>Weather Condition</h4>
-            {{ env_form|crispy }}
+            <h4>Weather Parameter</h4>
+            <div class="row mb-2">
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{ env_form.temperature.label_tag }}</label>
+                    {{ env_form.temperature }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{ env_form.humidity.label_tag }}</label>
+                    {{ env_form.humidity }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{ env_form.wind_speed.label_tag }}</label>
+                    {{ env_form.wind_speed }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{ env_form.seeing.label_tag }}</label>
+                    {{ env_form.seeing }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{ env_form.cloud_coverage.label_tag }}</label>
+                    {{ env_form.cloud_coverage }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="mb-2">{{env_form.moon_phase.label_tag }}</label>
+                    {{ env_form.moon_phase }}
+                </div>
+            </div>
 
+            <!-- Gets the weather data through the API -->
             <button type="button" id="getWeatherBtn" class="btn btn-info mt-2">Get Weather Data</button>
         </div>
 
     </div>
 
-    <!-- Second Row (Observation & Enviroment & Telescope Configuration)-->
+    <!-- Second Row (Instrumentation & Telescope Configuration)-->
     <div class="row mt-4">
 
         <!-- Instrumentation -->
@@ -74,13 +97,19 @@
 
     </div>
 
-    <!-- Third Row (Comments)-->
+    <!-- Third Row (Remote Operations & Comments)-->
     <div class="row mt-4">
 
-        <!-- Remote Operation Network Status -->
+        <!-- Remote Operation -->
         <div class="col-md-6">
-            <h4>Remote Operation Network Status</h4>
-            {{ remote_form|crispy }}
+            <h4>Remote Operation</h4>
+            <div id="remote-access-container">
+                {{ remote_form.remote_access|as_crispy_field }}
+            </div>
+
+            <div id="remote-observer-container" style="display: none;">
+                {{ remote_form.remote_observer|as_crispy_field }}
+            </div>
         </div>
 
 
@@ -146,6 +175,7 @@
     </div>
 
 
+    <!-- Fifth Row (Email & Download PDF)-->
     <div class="text-center mt-4 mb-5">
         {% if email_form %} <div class="form-group">
             {{ email_form.recipient_email.label_tag }}
@@ -238,6 +268,31 @@
             })
             .catch(error => console.error("Error fetching weather data:", error));
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const radioButtons = document.querySelectorAll('input[name="remote_access"]');
+        const observerContainer = document.getElementById("remote-observer-container");
+
+        function toggleObserverField() {
+            const selected = document.querySelector('input[name="remote_access"]:checked');
+            if (selected && selected.value === "True") {
+                observerContainer.style.display = "block";
+            } else {
+                observerContainer.style.display = "none";
+                // Optionally clear field when hidden:
+                const input = observerContainer.querySelector("input");
+                if (input) input.value = "";
+            }
+        }
+
+        radioButtons.forEach(radio => {
+            radio.addEventListener("change", toggleObserverField);
+        });
+
+        // Initialize on load
+        toggleObserverField();
+    });
+</script>
 
 </script>
 

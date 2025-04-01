@@ -14,10 +14,10 @@ from django.http import JsonResponse
 from dotenv import load_dotenv
 
 #required for downloading pdf
-from bs4 import BeautifulSoup
 from django.http import FileResponse, HttpResponse
-from django.template.loader import render_to_string
-import pdfkit
+import tempfile
+from .report_utils import generate_pdf_reportlab
+import tempfile
 
 #required for sending email
 from django.core.mail import EmailMessage
@@ -28,8 +28,6 @@ from django.core.exceptions import ValidationError
 #required for fits file editing
 import io
 from astropy.io import fits
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 load_dotenv()
 
@@ -192,61 +190,62 @@ def telescope_log_view(request):
 # Create PDF file from HTML template
 def create_pdf_file(session_id):
     """Generate a PDF for a given session_id and return the file path."""
-    wkhtmltopdf_path = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe"
-    if not os.path.exists(wkhtmltopdf_path):
-        return None
 
     general_instance = get_object_or_404(GeneralInfo, session_id=session_id)
-    context = {
-        'general': general_instance,
-        'environmental_condition': getattr(general_instance, 'environmental_condition', None),
-        'observation': getattr(general_instance, 'observation', None),
-        'telescope_configuration': getattr(general_instance, 'telescope_configuration', None),
-        'instrumentation': getattr(general_instance, 'instrumentation', None),
-        'remote_operation': getattr(general_instance, 'remote_operation', None),
-        'comments': getattr(general_instance, 'comments', None),
-    }
-    full_html = render_to_string('logging_system/session_detail.html', context)
-    soup = BeautifulSoup(full_html, "html.parser")
-    tables = soup.find_all("table")
-    table_titles = [
-        "GENERAL INFORMATION", "WEATHER CONDITIONS", "OBSERVATION PARAMETERS",
-        "TELESCOPE CONFIGURATION", "INSTRUMENTATION", "REMOTE OPERATION", "COMMENTS"
-    ]
-    styles = """
-    <style>
-        body { font-family: Arial, sans-serif; }
-        h2 { text-align: center; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        .table-container { margin: auto; width: 80%; }
-    </style>
-    """
-    table_html = f"<h2>Log Session: {session_id}</h2>{styles}<div class='container'>"
-    for title, table in zip(table_titles, tables):
-        table_html += f"<div class='table-box'><h3>{title}</h3>{str(table)}</div>"
-    table_html += "</div>"
 
-    pdf_options = {
-    'page-size': 'A4',
-    'orientation': 'Portrait',
-    'encoding': 'UTF-8',
-    'margin-top': '3mm',
-    'margin-right': '5mm',
-    'margin-bottom': '5mm',
-    'margin-left': '5mm',
-    'zoom': '0.5',  
-    'viewport-size': '1920x1080',  
-    'minimum-font-size': '6',  
-    'dpi': 400,  
-    'image-dpi': 100,  
-    'disable-smart-shrinking': '',
+    # Prepare structured data for reportlab
+    session_data = {
+        "session_id": general_instance.session_id,
+        "general": {
+            "telescope_name": general_instance.telescope_name,
+            "telescope_operator": general_instance.telescope_operator,
+            "observer_name": general_instance.observer_name,
+            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M %p"),
+            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M %p"),
+            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+        },
+        "weather": {
+            "temperature": getattr(general_instance.environmental_condition, "temperature", ""),
+            "humidity": getattr(general_instance.environmental_condition, "humidity", ""),
+            "wind_speed": getattr(general_instance.environmental_condition, "wind_speed", ""),
+            "seeing": getattr(general_instance.environmental_condition, "seeing", ""),
+            "cloud_coverage": getattr(general_instance.environmental_condition, "cloud_coverage", ""),
+            "moon_phase": getattr(general_instance.environmental_condition, "moon_phase", ""),
+        },
+        "observation": {
+            "target_name": getattr(general_instance.observation, "target_name", ""),
+            "right_ascension": getattr(general_instance.observation, "right_ascension", ""),
+            "declination": getattr(general_instance.observation, "declination", ""),
+            "magnitude": getattr(general_instance.observation, "magnitude", ""),
+        },
+        "telescope": {
+            "focus_position": getattr(general_instance.telescope_configuration, "focus_position", ""),
+            "air_mass": getattr(general_instance.telescope_configuration, "air_mass", ""),
+            "tracking_mode": getattr(general_instance.telescope_configuration, "tracking_mode", ""),
+            "guiding_status": getattr(general_instance.telescope_configuration, "guiding_status", ""),
+        },
+        "instrument": {
+            "instrument_name": getattr(general_instance.instrumentation, "instrument_name", ""),
+            "observing_mode": getattr(general_instance.instrumentation, "observing_mode", ""),
+            "calibration": getattr(general_instance.instrumentation, "calibration", ""),
+            "filter_in_use": getattr(general_instance.instrumentation, "filter_in_use", ""),
+            "exposure_time": getattr(general_instance.instrumentation, "exposure_time", ""),
+            "polarization_mode": getattr(general_instance.instrumentation, "polarization_mode", ""),
+        },
+        "remote": {
+            "remote_access": getattr(general_instance.remote_operation, "remote_access", ""),
+            "remote_observer": getattr(general_instance.remote_operation, "remote_observer", ""),
+            "emergency_stop": getattr(general_instance.remote_operation, "emergency_stop", ""),
+        },
+        "comments": {
+            "comments": getattr(general_instance.comments, "comments", ""),
+        }
     }
-    config = pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path)
-    pdf_path = f"Log_{session_id}.pdf"
-    pdfkit.from_string(table_html, pdf_path, options=pdf_options, configuration=config)
-    return pdf_path
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as log_file:
+        generate_pdf_reportlab(session_data, log_file.name)
+        return log_file.name
 
 # Generate PDF and return it as a FileResponse for download
 def generate_pdf(request, session_id):
@@ -444,6 +443,7 @@ def session_detail_view(request, session_id):
     instrumentation = getattr(general, 'instrumentation', None)
     remote_operation = getattr(general, 'remote_operation', None)
     comments = getattr(general, 'comments', None)
+    email_form = EmailForm()
     
     context = {
         'general': general,
@@ -453,6 +453,7 @@ def session_detail_view(request, session_id):
         'instrumentation': instrumentation,
         'remote_operation': remote_operation,
         'comments': comments,
+        'email_form': email_form,
     }
     return render(request, 'logging_system/session_detail.html', context)
 

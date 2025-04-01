@@ -21,6 +21,10 @@ class GeneralInfoForm(forms.ModelForm):
             'lst_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             'utc_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             }
+        session_id = forms.IntegerField(
+            label="Session Id (in numbers)",
+            widget=forms.NumberInput(attrs={'step':'1'})
+        )
 # Environmental Conditions Form
 class EnvironmentalConditionForm(forms.ModelForm):
     class Meta:
@@ -28,26 +32,13 @@ class EnvironmentalConditionForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['general_info']
         widgets = {
-            'humidity': forms.NumberInput(attrs={'step': '0.1'}),
-            'wind_speed': forms.NumberInput(attrs={'step': '0.1'}),
-            'seeing': forms.NumberInput(attrs={'step': '0.1'}),
+            'temperature': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'humidity': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'wind_speed': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'seeing': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'cloud_coverage': forms.TextInput(attrs={'class': 'form-control'}),
+            'moon_phase': forms.Select(attrs={'class': 'form-control'}),
         }
-    temperature = forms.FloatField(
-        label="Temprature (°C)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
-    humidity = forms.FloatField(
-        label="Humidity (%)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
-    wind_speed = forms.FloatField(
-        label="Wind Speed (km/s)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
-    seeing = forms.FloatField(
-        label="Seeing (arcsec)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
-    )
 # Observation Form
 class ObservationForm(forms.ModelForm):
 
@@ -55,8 +46,7 @@ class ObservationForm(forms.ModelForm):
     ra_minute = forms.IntegerField(label="RA Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     ra_second = forms.DecimalField(label="RA Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
 
-    dec_sign = forms.ChoiceField(label="Declination Sign", choices=[('+', '+'), ('-', '-')], widget=forms.Select(attrs={'class': 'form-control'}))
-    dec_degree = forms.IntegerField(label="Dec Degrees", min_value=0, max_value=90, widget=forms.NumberInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
+    dec_degree = forms.CharField(label="Dec Degrees", widget=forms.TextInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
     dec_minute = forms.IntegerField(label="Dec Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     dec_second = forms.DecimalField(label="Dec Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
     class Meta:
@@ -107,6 +97,16 @@ class InstrumentationForm(forms.ModelForm):
 
 # Remote Operation Form
 class RemoteOperationForm(forms.ModelForm):
+    REMOTE_ACCESS_CHOICES = (
+        (True, 'Yes'),
+        (False, 'No'),
+    )
+
+    remote_access = forms.ChoiceField(
+        label="Remote Access",
+        choices=REMOTE_ACCESS_CHOICES,
+        widget=forms.RadioSelect,
+    )
     class Meta:
         model = RemoteOperation
         fields = '__all__'
