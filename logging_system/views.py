@@ -189,6 +189,7 @@ def telescope_log_view(request):
         'session_id': locals().get('general_instance', None) and general_instance.session_id if 'send_email' in request.POST else None,
     })
 
+# Create PDF file from HTML template
 def create_pdf_file(session_id):
     """Generate a PDF for a given session_id and return the file path."""
     wkhtmltopdf_path = "C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe"
@@ -247,6 +248,7 @@ def create_pdf_file(session_id):
     pdfkit.from_string(table_html, pdf_path, options=pdf_options, configuration=config)
     return pdf_path
 
+# Generate PDF and return it as a FileResponse for download
 def generate_pdf(request, session_id):
     """Generate PDF and return it as a FileResponse for download."""
     pdf_path = create_pdf_file(session_id)
@@ -257,7 +259,8 @@ def generate_pdf(request, session_id):
     response = FileResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Log_{session_id}.pdf"'
     return response
-    
+
+# Send email with PDF attachment 
 def send_email(request, session_id):
     """Send the generated PDF to a user-defined email."""
     general = get_object_or_404(GeneralInfo, session_id=session_id)
@@ -350,6 +353,7 @@ def send_email(request, session_id):
     }
     return render(request, "logging_system/session_detail.html", context)
 
+# Fetch weather data from API
 def fetch_weather_data(request):
     """Fetch weather data from API and return JSON response."""
     api_key = os.getenv("Weather_API")
@@ -452,6 +456,7 @@ def session_detail_view(request, session_id):
     }
     return render(request, 'logging_system/session_detail.html', context)
 
+#fits page view
 @login_required
 def fits_view(request):
     logs = (
