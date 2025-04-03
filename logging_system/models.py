@@ -17,7 +17,7 @@ class GeneralInfo(models.Model):
     telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
     telescope_operator = models.CharField(max_length=100)
     observer_name = models.ForeignKey(User, on_delete=models.PROTECT)
-    session_id = models.CharField(max_length=50, unique=True)
+    session_id = models.IntegerField(max_length=50, unique=True)
     log_start_time_lst = models.DateTimeField(blank=False, null=False, unique=True)
     log_start_time_utc = models.DateTimeField(blank=False, null=False)
     log_end_time_lst = models.DateTimeField(blank=False,  null=False, unique=True)

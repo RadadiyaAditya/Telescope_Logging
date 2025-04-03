@@ -21,10 +21,7 @@ class GeneralInfoForm(forms.ModelForm):
             'lst_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             'utc_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             }
-        session_id = forms.IntegerField(
-            label="Session Id (in numbers)",
-            widget=forms.NumberInput(attrs={'step':'1'})
-        )
+        
 # Environmental Conditions Form
 class EnvironmentalConditionForm(forms.ModelForm):
     class Meta:
@@ -45,8 +42,9 @@ class ObservationForm(forms.ModelForm):
     ra_hour = forms.IntegerField(label="RA Hours", min_value=0, max_value=23, widget=forms.NumberInput(attrs={'placeholder': 'HH', 'class': 'form-control'}))
     ra_minute = forms.IntegerField(label="RA Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     ra_second = forms.DecimalField(label="RA Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
-
-    dec_degree = forms.CharField(label="Dec Degrees", widget=forms.TextInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
+ 
+    dec_sign = forms.ChoiceField(label="Declination Sign", choices=[('+', '+'), ('-', '-')], widget=forms.Select(attrs={'class': 'form-control'}))
+    dec_degree = forms.IntegerField(label="Dec Degrees", min_value=0, max_value=90, widget=forms.NumberInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
     dec_minute = forms.IntegerField(label="Dec Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     dec_second = forms.DecimalField(label="Dec Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
     class Meta:
@@ -59,8 +57,10 @@ class ObservationForm(forms.ModelForm):
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
+
     def clean(self):
         cleaned_data = super().clean()
+
         try:
             ra = f"{cleaned_data['ra_hour']:02} {cleaned_data['ra_minute']:02} {cleaned_data['ra_second']:05.2f}"
             dec = f"{cleaned_data['dec_sign']}{cleaned_data['dec_degree']:02} {cleaned_data['dec_minute']:02} {cleaned_data['dec_second']:05.2f}"

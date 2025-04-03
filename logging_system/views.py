@@ -48,6 +48,16 @@ def telescope_log_view(request):
         email_form = EmailForm(request.POST)
 
 
+        print("POST received")
+        print("GeneralInfoForm errors:", general_form.errors)
+        print("EnvForm errors:", env_form.errors)
+        print("TelescopeForm errors:", telescope_form.errors)
+        print("ObservationForm errors:", observation_form.errors)
+        print("InstrumentationForm errors:", instrumentation_form.errors)
+        print("RemoteForm errors:", remote_form.errors)
+        print("CommentForm errors:", comment_form.errors)
+        print("POST data:", request.POST)
+
         if (general_form.is_valid() and env_form.is_valid() and telescope_form.is_valid() and
             observation_form.is_valid() and instrumentation_form.is_valid() and remote_form.is_valid() and
             comment_form.is_valid()):
@@ -66,8 +76,8 @@ def telescope_log_view(request):
             telescope_instance.general_info = general_instance
             telescope_instance.save()
             
+
             observation_instance = observation_form.save(commit=False)
-            # Inject cleaned RA/Dec before saving 
             observation_instance.right_ascension = observation_form.cleaned_data['right_ascension']
             observation_instance.declination = observation_form.cleaned_data['declination']
             observation_instance.general_info = general_instance
@@ -162,7 +172,7 @@ def telescope_log_view(request):
 
                 return redirect('telescope_log')
 
-            messages.success(request, 'Log Saved Successfully')  # Redirect to a success page after saving
+            messages.success(request, 'Log Saved Successfully')
             return redirect('telescope_log')
 
     else:

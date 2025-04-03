@@ -34,6 +34,7 @@
             <div class="form-group">
                 <label class="mb-2">Declination (±DD MM SS.ss)</label>
                 <div class="d-flex gap-2 mb-3">
+                    {{ observation_form.dec_sign }}
                     {{ observation_form.dec_degree }}
                     {{ observation_form.dec_minute }}
                     {{ observation_form.dec_second }}
@@ -146,11 +147,13 @@
                 <div class="col-md-6">
                     <!-- Display Real-Time UTC Time (Without Saving) -->
                     <label for="utc_time_display">Coordinated Universal Time (UTC)</label>
+                    <!--<input type="hidden" name="log_start_time_utc" id="id_log_start_time_utc">-->
                     <input type="text" id="utc_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ utc_time }}"
                         data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
                     <!-- Display Real-Time LST (Without Saving) -->
                     <label class="mt-3" for="lst_time_display">Locat Sidereal Time (LST)</label>
+                    <!--<input type="hidden" name="log_start_time_lst" id="id_log_start_time_lst">-->
                     <input type="text" id="lst_time" class="form-control mt-2 mb-3 p-2" readonly value="{{ lst_time }}"
                         data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
@@ -159,10 +162,12 @@
                 <!-- Log End Time-->
                 <div class="col-md-3">
                     <label for="log_end_time_display">Log End Time (UTC)</label>
+                    <!--<input type="hidden" name="log_end_time_utc" id="id_log_end_time_utc">-->
                     <input type="text" id="log_end_time_display" class="form-control mt-2 mb-3 p-2" readonly value=""
                         data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
                     <label class="mt-3" for="log_end_time_display_lst">Log End Time (LST)</label>
+                   <!--<<input type="hidden" name="log_end_time_lst" id="id_log_end_time_lst">>-->
                     <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
                         value="" data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
@@ -183,10 +188,10 @@
             <small class="form-text text-muted">{{ email_form.recipient_email.help_text }}</small>
         </div>
         {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Save Log</button>
         <button type="submit" name="send_email" class="btn btn-primary">Send PDF via Email</button>
         <button type="submit" name="download_pdf" class="btn btn-primary">Download as PDF</button>
-        <button type="submit" class="btn btn-primary">Save Log</button>
-    </div>
 </form>
 
 

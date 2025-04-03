@@ -127,6 +127,10 @@
                         <th>Guiding Status</th>
                         <td>{{ telescope_configuration.guiding_status }}</td>
                     </tr>
+                    <tr>
+                        <th>Emergency Stop</th>
+                        <td>{{ telescope_configuration.emergency_stop }}</td>
+                    </tr>
                 </tbody>
             </table>
             {% endif %}
@@ -178,10 +182,6 @@
                     <tr>
                         <th>Remote Observer</th>
                         <td>{{ remote_operation.remote_observer }}</td>
-                    </tr>
-                    <tr>
-                        <th>Emergency Stop</th>
-                        <td>{{ remote_operation.emergency_stop }}</td>
                     </tr>
                 </tbody>
             </table>
