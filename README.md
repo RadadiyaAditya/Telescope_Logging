@@ -4,7 +4,7 @@ A powerful Django-based web application designed to streamline the logging of as
 
 ---
 
-## Features
+## 🚀 Features
 
 The application supports full lifecycle management of telescope observation sessions, including:
 
@@ -50,7 +50,7 @@ The application supports full lifecycle management of telescope observation sess
 
 ---
 
-## Tech Stack
+## 🛠 Tech Stack
 
 ### Backend
 - **Python 3.11+**
