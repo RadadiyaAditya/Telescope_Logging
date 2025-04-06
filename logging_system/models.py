@@ -1,3 +1,20 @@
+
+"""
+Models for the Telescope Logging System.
+
+Each model corresponds to a form section in the logging system and maps to a specific
+category of telescope observation data:
+- GeneralInfo: Main session data
+- EnvironmentalCondition: Weather and atmosphere
+- Observation: Target celestial object info
+- TelescopeConfiguration: Equipment settings during session
+- Instrumentation: Instrument use and exposure data
+- RemoteOperation: Remote access configuration
+- Comments: Optional user remarks
+
+Each model links to `GeneralInfo` through a OneToOneField for structured session tracking.
+"""
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -5,14 +22,25 @@ from django.contrib.auth.models import User
 
 # General Information
 class GeneralInfo(models.Model):
+    """
+    Stores session-level general information about telescope observations.
+
+    Attributes:
+        telescope_name (str): Name of the telescope used.
+        telescope_operator (str): Name of the person operating the telescope.
+        observer_name (User): ForeignKey to the user observing the session.
+        session_id (int): Unique identifier for the session.
+        log_start_time_lst (datetime): Log start time in Local Sidereal Time.
+        log_start_time_utc (datetime): Log start time in Coordinated Universal Time.
+        log_end_time_lst (datetime): Log end time in Local Sidereal Time.
+        log_end_time_utc (datetime): Log end time in Coordinated Universal Time.
+    """
+
     TELESCOPE_CHOICES = [
         ('TARA (1.2meter)','TARA (1.2meter)'),
         ('BHARMA (2.5meter)','BHARMA (2.5meter)')
     ]
     
-    OBSERVATORY_CHOICES = [
-        ('PRL Mount Abu Observatory','PRL Mount Abu Observatory')
-    ]
 
     telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
     telescope_operator = models.CharField(max_length=100)
@@ -27,6 +55,20 @@ class GeneralInfo(models.Model):
 
 # Environmental Conditions
 class EnvironmentalCondition(models.Model):
+
+    """
+    Stores atmospheric and environmental conditions during a session.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        temperature (float): Ambient temperature in degrees Celsius.
+        humidity (float): Relative humidity percentage.
+        wind_speed (float): Wind speed in m/s.
+        seeing (float): Atmospheric seeing in arcseconds.
+        cloud_coverage (str): Level of cloud coverage.
+        moon_phase (str): Moon phase during the observation.
+    """
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 
@@ -44,6 +86,18 @@ class EnvironmentalCondition(models.Model):
 
 # Observation Parameters
 class Observation(models.Model):
+
+    """
+    Stores astronomical observation parameters for the session.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        target_name (str): Name of the target object.
+        right_ascension (str): Right ascension of the target (HH:MM:SS).
+        declination (str): Declination of the target (±DD:MM:SS).
+        magnitude (str): Magnitude of the target object.
+    """
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 
@@ -57,6 +111,19 @@ class Observation(models.Model):
 
 # Telescope Configuration
 class TelescopeConfiguration(models.Model):
+
+    """
+    Stores configuration details of the telescope during the session.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        focus_position (float): Focus position of the telescope.
+        air_mass (float): Air mass at observation time.
+        tracking_mode (str): Tracking mode (Sidereal, Lunar, Solar).
+        guiding_status (str): Guiding status (Active, Passive, Disabled).
+        emergency_stop (bool): Indicates whether emergency stop was activated.
+    """
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 
@@ -74,6 +141,20 @@ class TelescopeConfiguration(models.Model):
 
 # Instrumentation
 class Instrumentation(models.Model):
+
+    """
+    Stores instrumentation and observational setup details.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        observing_mode (str): Observing mode (e.g., Imaging, Spectroscopy).
+        instrument_name (str): Name of the instrument used.
+        calibration (str): Calibration method used.
+        filter_in_use (str): Optical filter used during observation.
+        exposure_time (float): Exposure time in seconds.
+        polarization_mode (bool): Indicates if polarization mode was enabled.
+    """
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 
@@ -92,6 +173,17 @@ class Instrumentation(models.Model):
 
 # Remote Operation and Network Status
 class RemoteOperation(models.Model):
+
+    """
+    Stores remote operation details for the observation session.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        remote_access (bool): Indicates if remote access was enabled.
+        remote_observer (str): Name of the remote observer (if any).
+    """
+
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 
@@ -102,6 +194,15 @@ class RemoteOperation(models.Model):
     remote_observer = models.CharField(max_length=100, blank=True, null=True)
 
 class Comments(models.Model):
+
+    """
+    Stores additional comments or notes related to the observation session.
+
+    Attributes:
+        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.
+        comments (str): Freeform comment text.
+    """
+
     general_info = models.OneToOneField(
         GeneralInfo, 
         on_delete=models.CASCADE, 

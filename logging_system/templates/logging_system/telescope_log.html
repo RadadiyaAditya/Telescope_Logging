@@ -1,3 +1,26 @@
+<!--
+Django template for the main Telescope Log form page.
+
+Features:
+- Uses `crispy_forms` to render all Django forms cleanly.
+- Real-time UTC and LST updates via WebSocket (`/ws/lst/`).
+- Auto-filled observation data, weather from API, and email fields.
+- Button controls for Start Log, End Log, Save, Email, Download PDF.
+
+Form Sections:
+1. General Info, Observation Params, Weather (Row 1)
+2. Instrumentation and Telescope Configuration (Row 2)
+3. Remote Operation and Comments (Row 3)
+4. Log Time (auto-filled from WebSocket, Row 4)
+5. Email + PDF Actions (Row 5)
+
+JavaScript:
+- Handles WebSocket setup to stream real-time UTC/LST.
+- Functions to populate start/end log timestamps.
+- Weather API fetch and form population.
+- Toggle visibility for remote observer field.
+-->
+
 {% extends 'logging_system/base.html' %}
 {% load crispy_forms_tags %} <!-- Load crispy forms -->
 
@@ -196,6 +219,8 @@
 
 <script>
 
+    // WebSocket connection to receive real-time UTC and LST updates
+
     const socket = new WebSocket("ws://" + window.location.host + "/ws/lst/");
 
     socket.onopen = function () {
@@ -223,6 +248,9 @@
         }, 5000);
     };
 
+    // Functions to handle log start and end times
+    // These functions will be called when the respective buttons are clicked.
+    // They will populate the log start and end time fields with the current UTC and LST values.
     function startLog() {
         // Get the current UTC and LST values updated via the WebSocket
         const currentUTC = document.getElementById("utc_time").value;
@@ -250,6 +278,8 @@
         document.getElementById("id_log_end_time_lst").value = currentLST;
     }
 
+    // Fetch weather data from the API and populate the form fields
+    // This function is called when the "Get Weather Data" button is clicked.
     document.getElementById("getWeatherBtn").addEventListener("click", function () {
         fetch("/get-weather-data/")
             .then(response => response.json())
@@ -273,6 +303,9 @@
             .catch(error => console.error("Error fetching weather data:", error));
     });
 
+
+    // Toggle visibility of the remote observer field based on radio button selection
+    // This function is called when the page loads and when the radio button selection changes.
     document.addEventListener("DOMContentLoaded", function () {
         const radioButtons = document.querySelectorAll('input[name="remote_access"]');
         const observerContainer = document.getElementById("remote-observer-container");

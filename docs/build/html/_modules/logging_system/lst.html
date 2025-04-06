@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.lst &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">telescope_log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../logging_system.html">logging_system package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">logging_system.lst</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for logging_system.lst</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Local Sidereal Time (LST) Calculator.</span>
+
+<span class="sd">This module provides functions to:</span>
+<span class="sd">- Convert a datetime to Julian Date.</span>
+<span class="sd">- Calculate the number of days in a given month.</span>
+<span class="sd">- Convert IST to Local Sidereal Time for a given longitude (default: Mt. Abu).</span>
+
+<span class="sd">Sidereal Time is used in astronomy to track celestial objects. It differs from solar time.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<div class="viewcode-block" id="julian_date">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.lst.julian_date">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">julian_date</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a datetime object (IST) to Julian Date.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dt (datetime): Datetime in IST.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Julian Date value adjusted to UTC.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dt_utc</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="c1"># Convert IST to UTC</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">year</span>
+    <span class="n">month</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">month</span>
+    <span class="n">day</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">day</span>
+    <span class="n">hour</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">hour</span>
+    <span class="n">minute</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">minute</span>
+    <span class="n">second</span> <span class="o">=</span> <span class="n">dt_utc</span><span class="o">.</span><span class="n">second</span>
+
+    <span class="c1"># January and February adjustment</span>
+    <span class="k">if</span> <span class="n">month</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">year</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">month</span> <span class="o">+=</span> <span class="mi">12</span>
+
+    <span class="c1"># Julian calendar to Gregorian calendar correction</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">year</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">A</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">A</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># Final Julian Date computation</span>
+    <span class="n">JD</span> <span class="o">=</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">365.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">year</span> <span class="o">+</span> <span class="mi">4716</span><span class="p">))</span> <span class="o">+</span>
+          <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mf">30.6001</span> <span class="o">*</span> <span class="p">(</span><span class="n">month</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span>
+          <span class="n">day</span> <span class="o">+</span> <span class="n">B</span> <span class="o">-</span> <span class="mf">1524.5</span> <span class="o">+</span>
+          <span class="p">(</span><span class="n">hour</span> <span class="o">+</span> <span class="n">minute</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">second</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">/</span> <span class="mi">24</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">JD</span></div>
+
+
+<div class="viewcode-block" id="days_in_month">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.lst.days_in_month">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">days_in_month</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the number of days in a given month and year.</span>
+<span class="sd">    Handles leap years.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        year (int): Year</span>
+<span class="sd">        month (int): Month (1-12)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Number of days</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">month</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># Leap year check</span>
+        <span class="k">return</span> <span class="mi">29</span> <span class="k">if</span> <span class="p">(</span><span class="n">year</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">year</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">year</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="k">else</span> <span class="mi">28</span>
+    <span class="k">elif</span> <span class="n">month</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="mi">30</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">31</span></div>
+
+
+<div class="viewcode-block" id="compute_lst">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.lst.compute_lst">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_lst</span><span class="p">(</span><span class="n">ist_dt</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="mf">72.7761</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Local Sidereal Time (LST) from IST.</span>
+
+<span class="sd">    Steps:</span>
+<span class="sd">    1. Convert IST to UTC.</span>
+<span class="sd">    2. Calculate Julian Date.</span>
+<span class="sd">    3. Compute number of days since J2000.0.</span>
+<span class="sd">    4. Calculate GMST using astronomical formula.</span>
+<span class="sd">    5. Adjust GMST with local longitude to get LST.</span>
+<span class="sd">    6. Handle edge cases (LST overflows, day wrap-around).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ist_dt (datetime): Datetime in IST.</span>
+<span class="sd">        longitude (float): Longitude in degrees (default: Mt. Abu - 72.7761° E).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        datetime: Corresponding LST datetime object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># Step 1: Convert IST to UT</span>
+    <span class="n">ut_dt</span> <span class="o">=</span> <span class="n">ist_dt</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">ut_hours</span> <span class="o">=</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">hour</span> <span class="o">+</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">minute</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">+</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">second</span> <span class="o">/</span> <span class="mi">3600</span>
+    
+    <span class="c1"># Step 2: Calculate days since J2000.0</span>
+    <span class="n">JD</span> <span class="o">=</span> <span class="n">julian_date</span><span class="p">(</span><span class="n">ist_dt</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">JD</span> <span class="o">-</span> <span class="mf">2451545.0</span>  <span class="c1"># J2000.0 reference</span>
+
+    
+    <span class="c1"># Step 3: Compute GMST</span>
+    <span class="n">GMST</span> <span class="o">=</span> <span class="p">(</span><span class="mf">18.697374558</span> <span class="o">+</span> <span class="mf">24.06570982441908</span> <span class="o">*</span> <span class="n">D</span><span class="p">)</span> <span class="o">%</span> <span class="mi">24</span>
+    
+    <span class="c1"># Step 4: Convert GMST to LST</span>
+    <span class="n">LST</span> <span class="o">=</span> <span class="p">(</span><span class="n">GMST</span> <span class="o">+</span> <span class="p">(</span><span class="n">longitude</span> <span class="o">/</span> <span class="mi">15</span><span class="p">))</span> <span class="o">%</span> <span class="mi">24</span>
+    
+
+    <span class="c1"># Prepare LST date parts</span>
+    <span class="n">LST_year</span> <span class="o">=</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">year</span>
+    <span class="n">LST_month</span> <span class="o">=</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">month</span>
+    <span class="n">LST_day</span> <span class="o">=</span> <span class="n">ut_dt</span><span class="o">.</span><span class="n">day</span>
+
+
+    <span class="c1"># Handle negative LST edge case</span>
+    <span class="k">if</span> <span class="n">LST</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">LST_day</span> <span class="o">-=</span> <span class="mi">1</span>  <span class="c1"># Move back one day</span>
+        <span class="k">if</span> <span class="n">LST_day</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Handle month change</span>
+            <span class="n">LST_month</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">LST_month</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Handle year change</span>
+                <span class="n">LST_month</span> <span class="o">=</span> <span class="mi">12</span>
+                <span class="n">LST_year</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">LST_day</span> <span class="o">=</span> <span class="n">days_in_month</span><span class="p">(</span><span class="n">LST_year</span><span class="p">,</span> <span class="n">LST_month</span><span class="p">)</span>
+
+
+    <span class="c1"># Convert LST hours to time components</span>
+    <span class="n">total_seconds</span> <span class="o">=</span> <span class="n">LST</span> <span class="o">*</span> <span class="mi">3600</span>
+    <span class="n">LST_hour</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_seconds</span> <span class="o">//</span> <span class="mi">3600</span><span class="p">)</span>
+    <span class="n">LST_minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">total_seconds</span> <span class="o">%</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">//</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="n">LST_second</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">total_seconds</span> <span class="o">%</span> <span class="mi">60</span><span class="p">))</span>
+
+    <span class="c1"># Ensure LST_second does not exceed 59</span>
+    <span class="k">if</span> <span class="n">LST_second</span> <span class="o">==</span> <span class="mi">60</span><span class="p">:</span>
+        <span class="n">LST_second</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">LST_minute</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Ensure LST_minute does not exceed 59</span>
+    <span class="k">if</span> <span class="n">LST_minute</span> <span class="o">==</span> <span class="mi">60</span><span class="p">:</span>
+        <span class="n">LST_minute</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">LST_hour</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+    <span class="k">if</span> <span class="n">LST_hour</span> <span class="o">==</span> <span class="mi">24</span><span class="p">:</span>
+        <span class="n">LST_hour</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ut_dt</span> <span class="o">+=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ls_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">LST_year</span><span class="p">,</span> <span class="n">LST_month</span><span class="p">,</span> <span class="n">LST_day</span><span class="p">,</span> <span class="n">LST_hour</span><span class="p">,</span> <span class="n">LST_minute</span><span class="p">,</span> <span class="n">LST_second</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ls_dt</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

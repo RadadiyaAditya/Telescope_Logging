@@ -1,3 +1,21 @@
+<!--
+Django template to display a detailed read-only view of a single observation session.
+
+Main Features:
+- Displays all recorded data grouped into 3 rows:
+1. General info, Environmental conditions, Observation params
+2. Telescope configuration, Instrumentation, Remote operations
+3. Optional comments block (if present)
+- Offers options to:
+- Send PDF via email using an SMTP login popup modal
+- Download the session report as PDF
+- Return to the logs overview
+
+Styling:
+- Bootstrap table layout with striped, bordered formatting
+- Modal dialog for SMTP email input
+-->
+
 {% extends 'logging_system/base.html' %}
 
 {% block content %}
@@ -208,6 +226,7 @@
 </div>
 
 
+<!-- Buttons for PDF download and email sending -->
 <div class="container text-center mb-4">
     <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#smtpModal">
         Send PDF via Email

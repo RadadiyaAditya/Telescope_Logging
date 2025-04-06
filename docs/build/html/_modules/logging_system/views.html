@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.views &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">telescope_log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../logging_system.html">logging_system package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">logging_system.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for logging_system.views</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Views for the Telescope Logging System.</span>
+
+<span class="sd">Handles:</span>
+<span class="sd">- Multi-section form submission (general info, weather, telescope, observation, etc.)</span>
+<span class="sd">- PDF generation and download</span>
+<span class="sd">- Email sending with PDF attachment via SMTP or app email</span>
+<span class="sd">- FITS file upload and metadata injection</span>
+<span class="sd">- Log listing, filtering, and detail views</span>
+<span class="sd">- Weather data retrieval from API</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.shortcuts</span><span class="w"> </span><span class="kn">import</span> <span class="n">render</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">get_object_or_404</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">login_required</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.forms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GeneralInfoForm</span><span class="p">,</span> <span class="n">EnvironmentalConditionForm</span><span class="p">,</span> <span class="n">TelescopeConfigurationForm</span><span class="p">,</span>
+    <span class="n">ObservationForm</span><span class="p">,</span> <span class="n">InstrumentationForm</span><span class="p">,</span> <span class="n">RemoteOperationForm</span><span class="p">,</span> <span class="n">CommentForm</span><span class="p">,</span> <span class="n">EmailForm</span><span class="p">,</span>
+    <span class="n">FitsUploadForm</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralInfo</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="c1">#required for downloading pdf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileResponse</span><span class="p">,</span> <span class="n">HttpResponse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.report_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_pdf_reportlab</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="c1">#required for sending email</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.mail</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmailMessage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.forms</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmailForm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_email</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">smtplib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.multipart</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEMultipart</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.mime.application</span><span class="w"> </span><span class="kn">import</span> <span class="n">MIMEApplication</span>
+
+<span class="c1">#required for fits file editing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<span class="c1"># Create your views here.</span>
+
+<span class="c1"># Main form view</span>
+<div class="viewcode-block" id="telescope_log_view">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.telescope_log_view">[docs]</a>
+<span class="nd">@login_required</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">telescope_log_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main view for submitting telescope observation logs.</span>
+
+<span class="sd">    Handles multiple forms for different sections:</span>
+<span class="sd">    - General session info</span>
+<span class="sd">    - Environmental conditions</span>
+<span class="sd">    - Telescope configuration</span>
+<span class="sd">    - Observational parameters</span>
+<span class="sd">    - Instrumentation</span>
+<span class="sd">    - Remote operation</span>
+<span class="sd">    - Comments</span>
+<span class="sd">    - Email recipient entry</span>
+
+<span class="sd">    Supports PDF generation and email dispatch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request (HttpRequest): The HTTP request object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponse: Rendered form or redirect with success/failure messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">general_form</span> <span class="o">=</span> <span class="n">GeneralInfoForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">env_form</span> <span class="o">=</span> <span class="n">EnvironmentalConditionForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">telescope_form</span> <span class="o">=</span> <span class="n">TelescopeConfigurationForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">observation_form</span> <span class="o">=</span> <span class="n">ObservationForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">instrumentation_form</span> <span class="o">=</span> <span class="n">InstrumentationForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">remote_form</span> <span class="o">=</span> <span class="n">RemoteOperationForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">comment_form</span> <span class="o">=</span> <span class="n">CommentForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="n">email_form</span> <span class="o">=</span> <span class="n">EmailForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;POST received&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GeneralInfoForm errors:&quot;</span><span class="p">,</span> <span class="n">general_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EnvForm errors:&quot;</span><span class="p">,</span> <span class="n">env_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TelescopeForm errors:&quot;</span><span class="p">,</span> <span class="n">telescope_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ObservationForm errors:&quot;</span><span class="p">,</span> <span class="n">observation_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;InstrumentationForm errors:&quot;</span><span class="p">,</span> <span class="n">instrumentation_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RemoteForm errors:&quot;</span><span class="p">,</span> <span class="n">remote_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CommentForm errors:&quot;</span><span class="p">,</span> <span class="n">comment_form</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;POST data:&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">general_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">env_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">telescope_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span>
+            <span class="n">observation_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">instrumentation_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">remote_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span>
+            <span class="n">comment_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()):</span>
+
+
+            <span class="n">general_instance</span> <span class="o">=</span> <span class="n">general_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">general_instance</span><span class="o">.</span><span class="n">observer_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span>  <span class="c1"># Autofill with logged-in user</span>
+            <span class="n">general_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="c1"># For each related form, use commit=False, then set general_info.</span>
+            <span class="n">env_instance</span> <span class="o">=</span> <span class="n">env_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">env_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">env_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="n">telescope_instance</span> <span class="o">=</span> <span class="n">telescope_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">telescope_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">telescope_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+
+            <span class="n">observation_instance</span> <span class="o">=</span> <span class="n">observation_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">observation_instance</span><span class="o">.</span><span class="n">right_ascension</span> <span class="o">=</span> <span class="n">observation_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;right_ascension&#39;</span><span class="p">]</span>
+            <span class="n">observation_instance</span><span class="o">.</span><span class="n">declination</span> <span class="o">=</span> <span class="n">observation_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;declination&#39;</span><span class="p">]</span>
+            <span class="n">observation_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">observation_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="n">instrumentation_instance</span> <span class="o">=</span> <span class="n">instrumentation_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">instrumentation_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">instrumentation_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="n">remote_instance</span> <span class="o">=</span> <span class="n">remote_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">remote_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">remote_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="n">comment_instance</span> <span class="o">=</span> <span class="n">comment_form</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">comment_instance</span><span class="o">.</span><span class="n">general_info</span> <span class="o">=</span> <span class="n">general_instance</span>
+            <span class="n">comment_instance</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="s1">&#39;download_pdf&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+                <span class="c1"># Directly return the generated PDF file response.</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;Log Downloaded &amp; Saved Successfully&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">generate_pdf</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="s1">&#39;send_email&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+                <span class="n">recipient_list</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="s2">&quot;adityaradadiya294@gmail.com&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;adityaradadiya296@gmail.com&quot;</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span>
+                <span class="p">]</span>
+
+                <span class="c1"># Generate PDF for the saved log data</span>
+                <span class="n">pdf_path</span> <span class="o">=</span> <span class="n">create_pdf_file</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">pdf_path</span><span class="p">:</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Failed to generate PDF. Email not sent.&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+
+                <span class="c1"># Build the email body (similar to your session_detail email)</span>
+                <span class="n">email_body_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                &lt;html&gt;</span>
+<span class="s2">                &lt;head&gt;&lt;/head&gt;</span>
+<span class="s2">                &lt;body&gt;</span>
+<span class="s2">                    &lt;p&gt;Dear User,&lt;/p&gt;</span>
+<span class="s2">                    &lt;p&gt;Please find attached the telescope log report for session </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.&lt;/p&gt;</span>
+<span class="s2">                    &lt;h3&gt;Session Details:&lt;/h3&gt;</span>
+<span class="s2">                    &lt;ul&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Session ID:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Telescope:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_name</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Operator:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_operator</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Observer:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observer_name</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Log Start Time (UTC):&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Log Date:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %B %Y&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Instrument:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;instrument_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Exposure Time:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;exposure_time&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> seconds&lt;/li&gt;</span>
+<span class="s2">                        &lt;li&gt;&lt;strong&gt;Target Object:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;target_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">                    &lt;/ul&gt;</span>
+<span class="s2">                    &lt;p&gt;Best regards,&lt;br&gt;Telescope Logging System&lt;/p&gt;</span>
+<span class="s2">                &lt;/body&gt;</span>
+<span class="s2">                &lt;/html&gt;</span>
+<span class="s2">                &quot;&quot;&quot;</span>
+
+                <span class="c1"># Attempt to send the email</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">email_form</span> <span class="o">=</span> <span class="n">EmailForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">email_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                        <span class="n">additional_email</span> <span class="o">=</span> <span class="n">email_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;recipient_email&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">additional_email</span><span class="p">:</span>
+                            <span class="n">email_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">email</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">email</span> <span class="ow">in</span> <span class="n">additional_email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">email</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+                            <span class="k">for</span> <span class="n">email</span> <span class="ow">in</span> <span class="n">email_list</span><span class="p">:</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="n">validate_email</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+                                <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+                                    <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid email address: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+                            <span class="n">recipient_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">email_list</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Invalid email input.&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+            
+                    <span class="n">email</span> <span class="o">=</span> <span class="n">EmailMessage</span><span class="p">(</span>
+                        <span class="n">subject</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_name</span><span class="si">}</span><span class="s2"> Log - </span><span class="si">{</span><span class="n">general_instance</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %B %Y&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">body</span><span class="o">=</span><span class="n">email_body_html</span><span class="p">,</span>
+                        <span class="n">from_email</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;EMAIL_HOST_USER&quot;</span><span class="p">),</span>
+                        <span class="n">to</span><span class="o">=</span><span class="n">recipient_list</span>
+                        <span class="p">)</span>
+                    <span class="n">email</span><span class="o">.</span><span class="n">content_subtype</span> <span class="o">=</span> <span class="s2">&quot;html&quot;</span>
+                    <span class="n">email</span><span class="o">.</span><span class="n">attach_file</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">)</span>
+                    <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>
+
+                    <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Log Saved &amp; Email sent successfully to </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recipient_list</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to send email: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;Log Saved Successfully&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;telescope_log&#39;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">general_form</span> <span class="o">=</span> <span class="n">GeneralInfoForm</span><span class="p">()</span>
+        <span class="n">env_form</span> <span class="o">=</span> <span class="n">EnvironmentalConditionForm</span><span class="p">()</span>
+        <span class="n">telescope_form</span> <span class="o">=</span> <span class="n">TelescopeConfigurationForm</span><span class="p">()</span>
+        <span class="n">observation_form</span> <span class="o">=</span> <span class="n">ObservationForm</span><span class="p">()</span>
+        <span class="n">instrumentation_form</span> <span class="o">=</span> <span class="n">InstrumentationForm</span><span class="p">()</span>
+        <span class="n">remote_form</span> <span class="o">=</span> <span class="n">RemoteOperationForm</span><span class="p">()</span>
+        <span class="n">comment_form</span> <span class="o">=</span> <span class="n">CommentForm</span><span class="p">()</span>
+        <span class="n">email_form</span> <span class="o">=</span> <span class="n">EmailForm</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;logging_system/telescope_log.html&#39;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s1">&#39;general_form&#39;</span><span class="p">:</span> <span class="n">general_form</span><span class="p">,</span>
+        <span class="s1">&#39;env_form&#39;</span><span class="p">:</span> <span class="n">env_form</span><span class="p">,</span>
+        <span class="s1">&#39;telescope_form&#39;</span><span class="p">:</span> <span class="n">telescope_form</span><span class="p">,</span>
+        <span class="s1">&#39;observation_form&#39;</span><span class="p">:</span> <span class="n">observation_form</span><span class="p">,</span>
+        <span class="s1">&#39;instrumentation_form&#39;</span><span class="p">:</span> <span class="n">instrumentation_form</span><span class="p">,</span>
+        <span class="s1">&#39;remote_form&#39;</span><span class="p">:</span> <span class="n">remote_form</span><span class="p">,</span>
+        <span class="s1">&#39;comment_form&#39;</span><span class="p">:</span> <span class="n">comment_form</span><span class="p">,</span>
+        <span class="s1">&#39;email_form&#39;</span><span class="p">:</span> <span class="n">email_form</span><span class="p">,</span>
+        <span class="s1">&#39;session_id&#39;</span><span class="p">:</span> <span class="nb">locals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;general_instance&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span> <span class="k">if</span> <span class="s1">&#39;send_email&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">})</span></div>
+
+
+<span class="c1"># Create PDF file from HTML template</span>
+<div class="viewcode-block" id="create_pdf_file">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.create_pdf_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_pdf_file</span><span class="p">(</span><span class="n">session_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a PDF log file for a given session ID.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session_id (int): The unique session identifier.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Path to the generated PDF file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_instance</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">GeneralInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="c1"># Prepare structured data for reportlab</span>
+    <span class="n">session_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span>
+        <span class="s2">&quot;general&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;telescope_name&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_name</span><span class="p">,</span>
+            <span class="s2">&quot;telescope_operator&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_operator</span><span class="p">,</span>
+            <span class="s2">&quot;observer_name&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">observer_name</span><span class="p">,</span>
+            <span class="s2">&quot;log_start_time_utc&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2">, %Y, %I:%M %p&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;log_start_time_lst&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">log_start_time_lst</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2">, %Y, %I:%M %p&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;log_end_time_utc&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">log_end_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2">, %Y, %I:%M %p&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;log_end_time_lst&quot;</span><span class="p">:</span> <span class="n">general_instance</span><span class="o">.</span><span class="n">log_end_time_lst</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2">, %Y, %I:%M %p&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;weather&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;humidity&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;wind_speed&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;wind_speed&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;seeing&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;seeing&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;cloud_coverage&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;cloud_coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;moon_phase&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">environmental_condition</span><span class="p">,</span> <span class="s2">&quot;moon_phase&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;observation&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="s2">&quot;target_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;right_ascension&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="s2">&quot;right_ascension&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;declination&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="s2">&quot;declination&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;magnitude&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span> <span class="s2">&quot;magnitude&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;telescope&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;focus_position&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_configuration</span><span class="p">,</span> <span class="s2">&quot;focus_position&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;air_mass&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_configuration</span><span class="p">,</span> <span class="s2">&quot;air_mass&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;tracking_mode&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_configuration</span><span class="p">,</span> <span class="s2">&quot;tracking_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;guiding_status&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">telescope_configuration</span><span class="p">,</span> <span class="s2">&quot;guiding_status&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;instrument&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;instrument_name&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;instrument_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;observing_mode&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;observing_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;calibration&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;calibration&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;filter_in_use&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;filter_in_use&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;exposure_time&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;exposure_time&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;polarization_mode&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span> <span class="s2">&quot;polarization_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;remote&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;remote_access&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">remote_operation</span><span class="p">,</span> <span class="s2">&quot;remote_access&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;remote_observer&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">remote_operation</span><span class="p">,</span> <span class="s2">&quot;remote_observer&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;emergency_stop&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">remote_operation</span><span class="p">,</span> <span class="s2">&quot;emergency_stop&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general_instance</span><span class="o">.</span><span class="n">comments</span><span class="p">,</span> <span class="s2">&quot;comments&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.pdf&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">log_file</span><span class="p">:</span>
+        <span class="n">generate_pdf_reportlab</span><span class="p">(</span><span class="n">session_data</span><span class="p">,</span> <span class="n">log_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">log_file</span><span class="o">.</span><span class="n">name</span></div>
+
+
+<span class="c1"># Generate PDF and return it as a FileResponse for download</span>
+<div class="viewcode-block" id="generate_pdf">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.generate_pdf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_pdf</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serve a generated PDF file as a downloadable response.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request (HttpRequest): The HTTP request object.</span>
+<span class="sd">        session_id (int): The unique session ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        FileResponse: A response with the PDF file attached.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pdf_path</span> <span class="o">=</span> <span class="n">create_pdf_file</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pdf_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="s2">&quot;Error generating PDF.&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+    <span class="n">pdf_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">FileResponse</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/pdf&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;attachment; filename=&quot;Log_</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s1">.pdf&quot;&#39;</span>
+    <span class="k">return</span> <span class="n">response</span></div>
+
+
+<span class="c1"># Send email with PDF attachment </span>
+<div class="viewcode-block" id="send_email">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.send_email">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_email</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Send an email with a PDF log attachment to predefined and user-provided recipients.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request (HttpRequest): The HTTP request containing sender credentials and extra emails.</span>
+<span class="sd">        session_id (int): Session ID used to fetch data and generate the PDF.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponseRedirect: Redirect to the session detail page with success or error messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c1"># predifined recipient list (Admin &amp; miro)</span>
+    <span class="n">general</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">GeneralInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="n">recipient_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;adityaradadiya294@gmail.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;adityaradadiya296@gmail.com&quot;</span><span class="p">,</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">email</span>
+    <span class="p">]</span>
+
+
+    <span class="c1"># additional recipient email and thier validation</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">EmailForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">additional_email</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;recipient_email&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">additional_email</span><span class="p">:</span>
+                <span class="n">email_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">email</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">email</span> <span class="ow">in</span> <span class="n">additional_email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">email</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+                
+                <span class="c1"># Validate each email</span>
+                <span class="k">for</span> <span class="n">email</span> <span class="ow">in</span> <span class="n">email_list</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">validate_email</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+                        <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid email address: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;session_detail&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+                
+                
+                <span class="n">recipient_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">email_list</span><span class="p">)</span>
+
+    
+    <span class="c1"># Generate PDF for the email attachment</span>
+    <span class="n">pdf_path</span> <span class="o">=</span> <span class="n">create_pdf_file</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pdf_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">):</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Failed to generate PDF. Email not sent.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;session_detail&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+
+
+    <span class="c1"># Create the email body</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">telescope_name</span><span class="si">}</span><span class="s2"> Log - </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %B %Y&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">email_body</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;html&gt;</span>
+<span class="s2">    &lt;head&gt;&lt;/head&gt;</span>
+<span class="s2">    &lt;body&gt;</span>
+<span class="s2">        &lt;p&gt;Dear User,&lt;/p&gt;</span>
+<span class="s2">        &lt;p&gt;Please find attached the telescope log report for your session </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.&lt;/p&gt;</span>
+<span class="s2">        &lt;h3&gt;Session Details:&lt;/h3&gt;</span>
+<span class="s2">        &lt;ul&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Session ID:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Telescope:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">telescope_name</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Operator:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">telescope_operator</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Observer:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">observer_name</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Log Start Time (UTC):&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Log Date:&lt;/strong&gt; </span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">log_start_time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %B %Y&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Instrument:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;instrument_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Exposure Time:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="o">.</span><span class="n">instrumentation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;exposure_time&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> seconds&lt;/li&gt;</span>
+<span class="s2">            &lt;li&gt;&lt;strong&gt;Target Object:&lt;/strong&gt; </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="o">.</span><span class="n">observation</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;target_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;</span>
+<span class="s2">        &lt;/ul&gt;</span>
+<span class="s2">        &lt;p&gt;Best regards,&lt;br&gt;Telescope Logging System&lt;/p&gt;</span>
+<span class="s2">    &lt;/body&gt;</span>
+<span class="s2">    &lt;/html&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+
+
+    <span class="c1"># get sender&#39;s email and password</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">smtp_email</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;smtp_email&quot;</span><span class="p">)</span>
+        <span class="n">smtp_password</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;smtp_password&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># send email from the sender&#39;s email to the recipient list</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;From&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">smtp_email</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;To&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recipient_list</span><span class="p">)</span>
+            <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;Subject&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">MIMEText</span><span class="p">(</span><span class="n">email_body</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">))</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pdf_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">part</span> <span class="o">=</span> <span class="n">MIMEApplication</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">_subtype</span><span class="o">=</span><span class="s2">&quot;pdf&quot;</span><span class="p">)</span>
+                <span class="n">part</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s2">&quot;Content-Disposition&quot;</span><span class="p">,</span> <span class="s2">&quot;attachment&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Log_</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.pdf&quot;</span><span class="p">)</span>
+                <span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="s2">&quot;smtp.yourdomain.com&quot;</span><span class="p">,</span> <span class="mi">587</span><span class="p">)</span> <span class="k">as</span> <span class="n">server</span><span class="p">:</span>  <span class="c1"># Update your domain and port</span>
+                <span class="n">server</span><span class="o">.</span><span class="n">starttls</span><span class="p">()</span>
+                <span class="n">server</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">smtp_email</span><span class="p">,</span> <span class="n">smtp_password</span><span class="p">)</span>
+                <span class="n">server</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Email sent successfully to </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recipient_list</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;session_detail&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to send email: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;session_detail&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;session_detail&quot;</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span></div>
+
+
+<span class="c1"># Fetch weather data from API</span>
+<div class="viewcode-block" id="fetch_weather_data">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.fetch_weather_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_weather_data</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch current weather data from the WeatherAPI and return as JSON.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        JsonResponse: Dictionary containing temperature, humidity, wind speed, and cloud cover.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;Weather_API&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://api.weatherapi.com/v1/current.json?key=</span><span class="si">{</span><span class="n">api_key</span><span class="si">}</span><span class="s2">&amp;q=24.6528,72.7794&quot;</span>
+    
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span>
+            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">][</span><span class="s1">&#39;temp_c&#39;</span><span class="p">],</span>
+            <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">][</span><span class="s1">&#39;humidity&#39;</span><span class="p">],</span>
+            <span class="s2">&quot;wind_speed&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">][</span><span class="s1">&#39;wind_kph&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">3.6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="s2">&quot;cloud_cover&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;current&#39;</span><span class="p">][</span><span class="s1">&#39;cloud&#39;</span><span class="p">]</span>
+        <span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Failed to fetch weather data&quot;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span></div>
+
+
+<span class="c1"># Success view upon submitting form</span>
+<div class="viewcode-block" id="success_view">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.success_view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">success_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the success page after form submission.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponse: Rendered success.html template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;logging_system/success.html&#39;</span><span class="p">)</span></div>
+
+
+<span class="c1"># Logs Webpage</span>
+<div class="viewcode-block" id="log_data_view">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.log_data_view">[docs]</a>
+<span class="nd">@login_required</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_data_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the logs list page with filtering support.</span>
+
+<span class="sd">    Filters supported:</span>
+<span class="sd">    - session_id</span>
+<span class="sd">    - operator_name</span>
+<span class="sd">    - instrument_name</span>
+<span class="sd">    - target_name</span>
+<span class="sd">    - date</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponse: Rendered log_data.html with filtered logs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">session_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;session_id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">operator_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;operator_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">instrument_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">target_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">date_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Retrieve all log entries, ordering by the latest start time first</span>
+    <span class="n">logs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;-log_start_time_utc&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">select_related</span><span class="p">(</span>
+            <span class="s1">&#39;environmental_condition&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;observation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;telescope_configuration&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;instrumentation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;remote_operation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;comments&#39;</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">filters</span> <span class="o">=</span> <span class="n">Q</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+        <span class="n">filters</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="n">session_id__icontains</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">operator_name</span><span class="p">:</span>
+        <span class="n">filters</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="n">operator_name__icontains</span><span class="o">=</span><span class="n">operator_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">instrument_name</span><span class="p">:</span>
+        <span class="n">filters</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="n">instrumentation__instrument_name__icontains</span><span class="o">=</span><span class="n">instrument_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">target_name</span><span class="p">:</span>
+        <span class="n">filters</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="n">observation__target_name__icontains</span><span class="o">=</span><span class="n">target_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">date_filter</span><span class="p">:</span>
+        <span class="n">filters</span> <span class="o">&amp;=</span> <span class="n">Q</span><span class="p">(</span><span class="n">log_start_time_utc__date</span><span class="o">=</span><span class="n">date_filter</span><span class="p">)</span>
+
+    <span class="n">logs</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;logs&#39;</span><span class="p">:</span> <span class="n">logs</span><span class="p">,</span>
+        <span class="s1">&#39;session_id&#39;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+        <span class="s1">&#39;operator_name&#39;</span><span class="p">:</span> <span class="n">operator_name</span><span class="p">,</span>
+        <span class="s1">&#39;instrument_name&#39;</span><span class="p">:</span> <span class="n">instrument_name</span><span class="p">,</span>
+        <span class="s1">&#39;target_name&#39;</span><span class="p">:</span> <span class="n">target_name</span><span class="p">,</span>
+        <span class="s1">&#39;date_filter&#39;</span><span class="p">:</span> <span class="n">date_filter</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;logging_system/log_data.html&#39;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># detailed view of logs</span>
+<div class="viewcode-block" id="session_detail_view">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.session_detail_view">[docs]</a>
+<span class="nd">@login_required</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">session_detail_view</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Render the detailed view for a specific observation session.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        request (HttpRequest): Incoming request object.</span>
+<span class="sd">        session_id (int): Unique ID for the session.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponse: Rendered session_detail.html template with session data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Retrieve the main GeneralInfo record using the unique session_id.</span>
+    <span class="n">general</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">GeneralInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+    
+    <span class="c1"># Retrieve the related one-to-one objects using the related_name specified in your models.</span>
+    <span class="c1"># Use getattr() with a default of None in case a related record doesn&#39;t exist.</span>
+    <span class="n">environmental_condition</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;environmental_condition&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;observation&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">telescope_configuration</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;telescope_configuration&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">instrumentation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;instrumentation&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">remote_operation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;remote_operation&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">comments</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">general</span><span class="p">,</span> <span class="s1">&#39;comments&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">email_form</span> <span class="o">=</span> <span class="n">EmailForm</span><span class="p">()</span>
+    
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="n">general</span><span class="p">,</span>
+        <span class="s1">&#39;environmental_condition&#39;</span><span class="p">:</span> <span class="n">environmental_condition</span><span class="p">,</span>
+        <span class="s1">&#39;observation&#39;</span><span class="p">:</span> <span class="n">observation</span><span class="p">,</span>
+        <span class="s1">&#39;telescope_configuration&#39;</span><span class="p">:</span> <span class="n">telescope_configuration</span><span class="p">,</span>
+        <span class="s1">&#39;instrumentation&#39;</span><span class="p">:</span> <span class="n">instrumentation</span><span class="p">,</span>
+        <span class="s1">&#39;remote_operation&#39;</span><span class="p">:</span> <span class="n">remote_operation</span><span class="p">,</span>
+        <span class="s1">&#39;comments&#39;</span><span class="p">:</span> <span class="n">comments</span><span class="p">,</span>
+        <span class="s1">&#39;email_form&#39;</span><span class="p">:</span> <span class="n">email_form</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;logging_system/session_detail.html&#39;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></div>
+
+
+<span class="c1">#fits page view</span>
+<div class="viewcode-block" id="fits_view">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.views.fits_view">[docs]</a>
+<span class="nd">@login_required</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fits_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Allow users to upload a FITS file and inject log metadata into its header.</span>
+
+<span class="sd">    - Lists existing logs for selection</span>
+<span class="sd">    - Updates the FITS header fields</span>
+<span class="sd">    - Returns a modified FITS file as a downloadable response</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        HttpResponse: Downloaded FITS file or re-rendered form with messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;-log_start_time_utc&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">select_related</span><span class="p">(</span>
+            <span class="s1">&#39;environmental_condition&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;observation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;telescope_configuration&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;instrumentation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;remote_operation&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;comments&#39;</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">FitsUploadForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">FILES</span><span class="p">)</span>
+        <span class="n">session_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;selected_log&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">session_id</span><span class="p">:</span>
+            <span class="n">fits_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">FILES</span><span class="p">[</span><span class="s1">&#39;fits_file&#39;</span><span class="p">]</span>
+            <span class="n">general</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">GeneralInfo</span><span class="p">,</span> <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span>
+
+            <span class="c1"># Read and update FITS header</span>
+            <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fits_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdul</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">hdul</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;SESSION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">session_id</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">telescope_name</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;OBSERVER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">general</span><span class="o">.</span><span class="n">observer_name</span><span class="p">)</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;OPERATOR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">telescope_operator</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;TARGET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">target_name</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">right_ascension</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">observation</span><span class="o">.</span><span class="n">declination</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">instrumentation</span><span class="o">.</span><span class="n">instrument_name</span>
+                <span class="n">header</span><span class="p">[</span><span class="s1">&#39;EXPTIME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">general</span><span class="o">.</span><span class="n">instrumentation</span><span class="o">.</span><span class="n">exposure_time</span>
+
+                <span class="c1"># Save new FITS file in buffer-memory</span>
+                <span class="n">updated_data</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+                <span class="n">hdul</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="n">updated_data</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">updated_data</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="n">response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">updated_data</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/fits&#39;</span><span class="p">)</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Modified_</span><span class="si">{</span><span class="n">general</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.fits&quot;</span>
+                <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;attachment; filename=&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Invalid form submission or log not selected.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">FitsUploadForm</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;logging_system/fits_page.html&quot;</span><span class="p">,</span> <span class="p">{</span>
+        <span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span>
+        <span class="s2">&quot;logs&quot;</span><span class="p">:</span> <span class="n">logs</span><span class="p">,</span>
+    <span class="p">})</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

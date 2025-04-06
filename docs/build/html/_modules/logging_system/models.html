@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.models &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">telescope_log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../logging_system.html">logging_system package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">logging_system.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for logging_system.models</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Models for the Telescope Logging System.</span>
+
+<span class="sd">Each model corresponds to a form section in the logging system and maps to a specific</span>
+<span class="sd">category of telescope observation data:</span>
+<span class="sd">- GeneralInfo: Main session data</span>
+<span class="sd">- EnvironmentalCondition: Weather and atmosphere</span>
+<span class="sd">- Observation: Target celestial object info</span>
+<span class="sd">- TelescopeConfiguration: Equipment settings during session</span>
+<span class="sd">- Instrumentation: Instrument use and exposure data</span>
+<span class="sd">- RemoteOperation: Remote access configuration</span>
+<span class="sd">- Comments: Optional user remarks</span>
+
+<span class="sd">Each model links to `GeneralInfo` through a OneToOneField for structured session tracking.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">User</span>
+
+<span class="c1"># Create your models here.</span>
+
+<span class="c1"># General Information</span>
+<div class="viewcode-block" id="GeneralInfo">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.GeneralInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralInfo</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores session-level general information about telescope observations.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        telescope_name (str): Name of the telescope used.</span>
+<span class="sd">        telescope_operator (str): Name of the person operating the telescope.</span>
+<span class="sd">        observer_name (User): ForeignKey to the user observing the session.</span>
+<span class="sd">        session_id (int): Unique identifier for the session.</span>
+<span class="sd">        log_start_time_lst (datetime): Log start time in Local Sidereal Time.</span>
+<span class="sd">        log_start_time_utc (datetime): Log start time in Coordinated Universal Time.</span>
+<span class="sd">        log_end_time_lst (datetime): Log end time in Local Sidereal Time.</span>
+<span class="sd">        log_end_time_utc (datetime): Log end time in Coordinated Universal Time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TELESCOPE_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;TARA (1.2meter)&#39;</span><span class="p">,</span><span class="s1">&#39;TARA (1.2meter)&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;BHARMA (2.5meter)&#39;</span><span class="p">,</span><span class="s1">&#39;BHARMA (2.5meter)&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    
+
+    <span class="n">telescope_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">TELESCOPE_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;TARA (1.2meter)&#39;</span><span class="p">)</span>
+    <span class="n">telescope_operator</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">observer_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">PROTECT</span><span class="p">)</span>
+    <span class="n">session_id</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">log_start_time_lst</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">log_start_time_utc</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">log_end_time_lst</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">log_end_time_utc</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+
+<span class="c1"># Environmental Conditions</span>
+<div class="viewcode-block" id="EnvironmentalCondition">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.EnvironmentalCondition">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnvironmentalCondition</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores atmospheric and environmental conditions during a session.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        temperature (float): Ambient temperature in degrees Celsius.</span>
+<span class="sd">        humidity (float): Relative humidity percentage.</span>
+<span class="sd">        wind_speed (float): Wind speed in m/s.</span>
+<span class="sd">        seeing (float): Atmospheric seeing in arcseconds.</span>
+<span class="sd">        cloud_coverage (str): Level of cloud coverage.</span>
+<span class="sd">        moon_phase (str): Moon phase during the observation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;environmental_condition&#39;</span>
+    <span class="p">)</span>
+    
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">humidity</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">wind_speed</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">seeing</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">cloud_coverage</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">MOON_PHASES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;New Moon&#39;</span><span class="p">,</span> <span class="s1">&#39;New Moon&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Full Moon&#39;</span><span class="p">,</span> <span class="s1">&#39;Full Moon&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;First Quarter&#39;</span><span class="p">,</span> <span class="s1">&#39;First Quarter&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Last Quarter&#39;</span><span class="p">,</span> <span class="s1">&#39;Last Quarter&#39;</span><span class="p">)]</span>
+    <span class="n">moon_phase</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">MOON_PHASES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;New Moon&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Observation Parameters</span>
+<div class="viewcode-block" id="Observation">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.Observation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Observation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores astronomical observation parameters for the session.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        target_name (str): Name of the target object.</span>
+<span class="sd">        right_ascension (str): Right ascension of the target (HH:MM:SS).</span>
+<span class="sd">        declination (str): Declination of the target (±DD:MM:SS).</span>
+<span class="sd">        magnitude (str): Magnitude of the target object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;observation&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">target_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">right_ascension</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">declination</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">magnitude</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span></div>
+
+
+<span class="c1"># Telescope Configuration</span>
+<div class="viewcode-block" id="TelescopeConfiguration">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.TelescopeConfiguration">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TelescopeConfiguration</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores configuration details of the telescope during the session.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        focus_position (float): Focus position of the telescope.</span>
+<span class="sd">        air_mass (float): Air mass at observation time.</span>
+<span class="sd">        tracking_mode (str): Tracking mode (Sidereal, Lunar, Solar).</span>
+<span class="sd">        guiding_status (str): Guiding status (Active, Passive, Disabled).</span>
+<span class="sd">        emergency_stop (bool): Indicates whether emergency stop was activated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;telescope_configuration&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">TRACKING_MODES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Sidereal&#39;</span><span class="p">,</span> <span class="s1">&#39;Sidereal&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Lunar&#39;</span><span class="p">,</span> <span class="s1">&#39;Lunar&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Solar&#39;</span><span class="p">,</span> <span class="s1">&#39;Solar&#39;</span><span class="p">)]</span>
+    <span class="n">GUIDING_STATUSES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Active&#39;</span><span class="p">,</span> <span class="s1">&#39;Active&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Passive&#39;</span><span class="p">,</span> <span class="s1">&#39;Passive&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Disaled&#39;</span><span class="p">,</span> <span class="s1">&#39;Disabled&#39;</span><span class="p">)]</span>
+
+    <span class="n">focus_position</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">air_mass</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">tracking_mode</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">TRACKING_MODES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Sidereal&#39;</span><span class="p">)</span>
+    <span class="n">guiding_status</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">GUIDING_STATUSES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Active&#39;</span><span class="p">)</span>
+    <span class="n">emergency_stop</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<span class="c1"># Instrumentation</span>
+<div class="viewcode-block" id="Instrumentation">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.Instrumentation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Instrumentation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores instrumentation and observational setup details.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        observing_mode (str): Observing mode (e.g., Imaging, Spectroscopy).</span>
+<span class="sd">        instrument_name (str): Name of the instrument used.</span>
+<span class="sd">        calibration (str): Calibration method used.</span>
+<span class="sd">        filter_in_use (str): Optical filter used during observation.</span>
+<span class="sd">        exposure_time (float): Exposure time in seconds.</span>
+<span class="sd">        polarization_mode (bool): Indicates if polarization mode was enabled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;instrumentation&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">OBSERVING_MODES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Imaging&#39;</span><span class="p">,</span> <span class="s1">&#39;Imaging&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Spectroscopy&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectroscopy&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Spectropolarimetry&#39;</span><span class="p">,</span> <span class="s1">&#39;Spectropolarimetry&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Polarimetry&#39;</span><span class="p">,</span> <span class="s1">&#39;Polarimetry&#39;</span><span class="p">)]</span>
+    <span class="n">FILTERS</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">),(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)]</span>
+    <span class="n">INSTRUMENT_NAME</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;PARAS-1&#39;</span><span class="p">,</span> <span class="s1">&#39;PARAS-1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;PARAS-2&#39;</span><span class="p">,</span> <span class="s1">&#39;PARAS-2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ProtoPol&#39;</span><span class="p">,</span> <span class="s1">&#39;ProtoPol&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;LISA&#39;</span><span class="p">,</span> <span class="s1">&#39;LISA&#39;</span><span class="p">),(</span><span class="s1">&#39;EMPOL&#39;</span><span class="p">,</span> <span class="s1">&#39;EMPOL&#39;</span><span class="p">),(</span><span class="s1">&#39;LRS&#39;</span><span class="p">,</span> <span class="s1">&#39;LRS&#39;</span><span class="p">),(</span><span class="s1">&#39;FOSC&#39;</span><span class="p">,</span> <span class="s1">&#39;FOSC&#39;</span><span class="p">)]</span>
+    <span class="n">observing_mode</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">OBSERVING_MODES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Imaging&#39;</span><span class="p">)</span>
+    <span class="n">instrument_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">INSTRUMENT_NAME</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;PARAS-1&#39;</span><span class="p">)</span>
+    <span class="n">calibration</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;Bias&#39;</span><span class="p">,</span> <span class="s1">&#39;Bias&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Dark&#39;</span><span class="p">,</span> <span class="s1">&#39;Dark&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;Flat&#39;</span><span class="p">,</span> <span class="s1">&#39;Flat&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lamp&#39;</span><span class="p">,</span> <span class="s1">&#39;lamp&#39;</span><span class="p">)],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Bias&#39;</span><span class="p">)</span>
+    <span class="n">filter_in_use</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">FILTERS</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;U&#39;</span><span class="p">)</span>
+    <span class="n">exposure_time</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">&#39;10&#39;</span><span class="p">)</span>
+    <span class="n">polarization_mode</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<span class="c1"># Remote Operation and Network Status</span>
+<div class="viewcode-block" id="RemoteOperation">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.RemoteOperation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RemoteOperation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores remote operation details for the observation session.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        remote_access (bool): Indicates if remote access was enabled.</span>
+<span class="sd">        remote_observer (str): Name of the remote observer (if any).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;remote_operation&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">remote_access</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">remote_observer</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Comments">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.Comments">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Comments</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores additional comments or notes related to the observation session.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        general_info (GeneralInfo): One-to-one relationship with GeneralInfo.</span>
+<span class="sd">        comments (str): Freeform comment text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">general_info</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span>
+        <span class="n">GeneralInfo</span><span class="p">,</span> 
+        <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> 
+        <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;comments&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">comments</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

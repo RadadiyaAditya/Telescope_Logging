@@ -10,6 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+
+"""
+Django settings for the Telescope Logging project.
+
+Includes configuration for:
+- PostgreSQL database via environment variables
+- Real-time LST updates using Django Channels
+- SMTP email sending via Gmail
+- Static files using WhiteNoise for production
+- Bootstrap 5 with Crispy Forms
+- Secure and environment-based secret management
+"""
+
 import os
 
 from dotenv import load_dotenv
@@ -18,8 +31,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# Base directory of the Django project
+# This is the directory where manage.py is located.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
@@ -42,7 +60,7 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 
 # Application definition
-
+# Installed apps including Crispy Forms, Channels, and custom apps
 INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
@@ -57,6 +75,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
 ]
 
+# Middleware includes WhiteNoise for static file serving
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -68,6 +87,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# URL routing and template rendering
 ROOT_URLCONF = 'telescope_log.urls'
 
 TEMPLATES = [
@@ -86,9 +106,12 @@ TEMPLATES = [
     },
 ]
 
+# ASGI and WSGI application references
 ASGI_APPLICATION = "telescope_log.asgi.application"
 WSGI_APPLICATION = 'telescope_log.wsgi.application'
 
+
+# Django Channels configuration (in-memory channel layer)
 # Real-Time websockets
 CHANNEL_LAYERS = {
     "default": {
@@ -102,7 +125,7 @@ CHANNEL_LAYERS = {
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# PostgreSQL database configuration from environment
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

@@ -1,3 +1,16 @@
+"""
+Views for the Telescope Logging System.
+
+Handles:
+- Multi-section form submission (general info, weather, telescope, observation, etc.)
+- PDF generation and download
+- Email sending with PDF attachment via SMTP or app email
+- FITS file upload and metadata injection
+- Log listing, filtering, and detail views
+- Weather data retrieval from API
+"""
+
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -40,6 +53,28 @@ load_dotenv()
 # Main form view
 @login_required
 def telescope_log_view(request):
+
+    """
+    Main view for submitting telescope observation logs.
+
+    Handles multiple forms for different sections:
+    - General session info
+    - Environmental conditions
+    - Telescope configuration
+    - Observational parameters
+    - Instrumentation
+    - Remote operation
+    - Comments
+    - Email recipient entry
+
+    Supports PDF generation and email dispatch.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered form or redirect with success/failure messages.
+    """
 
     if request.method == 'POST':
         general_form = GeneralInfoForm(request.POST)
@@ -203,7 +238,15 @@ def telescope_log_view(request):
 
 # Create PDF file from HTML template
 def create_pdf_file(session_id):
-    """Generate a PDF for a given session_id and return the file path."""
+    """
+    Generate a PDF log file for a given session ID.
+
+    Args:
+        session_id (int): The unique session identifier.
+
+    Returns:
+        str: Path to the generated PDF file.
+    """
 
     general_instance = get_object_or_404(GeneralInfo, session_id=session_id)
 
@@ -263,7 +306,17 @@ def create_pdf_file(session_id):
 
 # Generate PDF and return it as a FileResponse for download
 def generate_pdf(request, session_id):
-    """Generate PDF and return it as a FileResponse for download."""
+    """
+    Serve a generated PDF file as a downloadable response.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        session_id (int): The unique session ID.
+
+    Returns:
+        FileResponse: A response with the PDF file attached.
+    """
+
     pdf_path = create_pdf_file(session_id)
     if not pdf_path or not os.path.exists(pdf_path):
         return HttpResponse("Error generating PDF.", status=500)
@@ -275,7 +328,16 @@ def generate_pdf(request, session_id):
 
 # Send email with PDF attachment 
 def send_email(request, session_id):
-    """Send the generated PDF to a user-defined email."""
+    """
+    Send an email with a PDF log attachment to predefined and user-provided recipients.
+
+    Args:
+        request (HttpRequest): The HTTP request containing sender credentials and extra emails.
+        session_id (int): Session ID used to fetch data and generate the PDF.
+
+    Returns:
+        HttpResponseRedirect: Redirect to the session detail page with success or error messages.
+    """
 
 
     # predifined recipient list (Admin & miro)
@@ -376,7 +438,13 @@ def send_email(request, session_id):
 
 # Fetch weather data from API
 def fetch_weather_data(request):
-    """Fetch weather data from API and return JSON response."""
+    """
+    Fetch current weather data from the WeatherAPI and return as JSON.
+
+    Returns:
+        JsonResponse: Dictionary containing temperature, humidity, wind speed, and cloud cover.
+    """
+
     api_key = os.getenv("Weather_API")
     url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q=24.6528,72.7794"
     
@@ -394,11 +462,31 @@ def fetch_weather_data(request):
 
 # Success view upon submitting form
 def success_view(request):
+    """
+    Render the success page after form submission.
+
+    Returns:
+        HttpResponse: Rendered success.html template.
+    """
     return render(request, 'logging_system/success.html')
 
 # Logs Webpage
 @login_required
 def log_data_view(request):
+
+    """
+    Render the logs list page with filtering support.
+
+    Filters supported:
+    - session_id
+    - operator_name
+    - instrument_name
+    - target_name
+    - date
+
+    Returns:
+        HttpResponse: Rendered log_data.html with filtered logs.
+    """
 
     session_id = request.GET.get('session_id', '')
     operator_name = request.GET.get('operator_name', '')
@@ -454,6 +542,17 @@ def log_data_view(request):
 # detailed view of logs
 @login_required
 def session_detail_view(request, session_id):
+
+    """
+    Render the detailed view for a specific observation session.
+
+    Args:
+        request (HttpRequest): Incoming request object.
+        session_id (int): Unique ID for the session.
+
+    Returns:
+        HttpResponse: Rendered session_detail.html template with session data.
+    """
     # Retrieve the main GeneralInfo record using the unique session_id.
     general = get_object_or_404(GeneralInfo, session_id=session_id)
     
@@ -482,6 +581,16 @@ def session_detail_view(request, session_id):
 #fits page view
 @login_required
 def fits_view(request):
+    """
+    Allow users to upload a FITS file and inject log metadata into its header.
+
+    - Lists existing logs for selection
+    - Updates the FITS header fields
+    - Returns a modified FITS file as a downloadable response
+
+    Returns:
+        HttpResponse: Downloaded FITS file or re-rendered form with messages.
+    """
     logs = (
         GeneralInfo.objects.all()
         .order_by('-log_start_time_utc')

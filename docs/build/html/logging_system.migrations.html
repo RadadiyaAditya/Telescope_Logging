@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.migrations package &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="users package" href="users.html" />
+    <link rel="prev" title="logging_system package" href="logging_system.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">telescope_log</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="logging_system.html">logging_system package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="logging_system.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">logging_system.migrations package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0001_initial">logging_system.migrations.0001_initial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0002_generalinfo_observer_name">logging_system.migrations.0002_generalinfo_observer_name module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more">logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage">logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0005_alter_observation_right_ascension">logging_system.migrations.0005_alter_observation_right_ascension module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0006_remove_generalinfo_observatory_name">logging_system.migrations.0006_remove_generalinfo_observatory_name module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0007_remove_observation_air_mass_and_more">logging_system.migrations.0007_remove_observation_air_mass_and_more module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0008_alter_generalinfo_session_id">logging_system.migrations.0008_alter_generalinfo_session_id module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations.0009_alter_generalinfo_session_id">logging_system.migrations.0009_alter_generalinfo_session_id module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-logging_system.migrations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.admin">logging_system.admin module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.apps">logging_system.apps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.consumers">logging_system.consumers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.forms">logging_system.forms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.lst">logging_system.lst module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.models">logging_system.models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.report_utils">logging_system.report_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.routing">logging_system.routing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.tests">logging_system.tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.urls">logging_system.urls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system.views">logging_system.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="logging_system.html#module-logging_system">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="logging_system.html">logging_system package</a></li>
+      <li class="breadcrumb-item active">logging_system.migrations package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/logging_system.migrations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="logging-system-migrations-package">
+<h1>logging_system.migrations package<a class="headerlink" href="#logging-system-migrations-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-logging_system.migrations.0001_initial">
+<span id="logging-system-migrations-0001-initial-module"></span><h2>logging_system.migrations.0001_initial module<a class="headerlink" href="#module-logging_system.migrations.0001_initial" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0001_initial.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0001_initial.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0001_initial.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0001_initial.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0001_initial.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#logging_system.migrations.0001_initial.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0001_initial.Migration.initial">
+<span class="sig-name descname"><span class="pre">initial</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#logging_system.migrations.0001_initial.Migration.initial" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0001_initial.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;CreateModel</span>&#160; <span class="pre">name='GeneralInfo',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('telescope_name',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('observatory_name',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('operator_name',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('session_id',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('log_start_time_lst',</span> <span class="pre">&lt;django.db.models.fields.DateTimeField&gt;),</span> <span class="pre">('log_start_time_utc',</span> <span class="pre">&lt;django.db.models.fields.DateTimeField&gt;),</span> <span class="pre">('log_end_time_lst',</span> <span class="pre">&lt;django.db.models.fields.DateTimeField&gt;),</span> <span class="pre">('log_end_time_utc',</span> <span class="pre">&lt;django.db.models.fields.DateTimeField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='EnvironmentalCondition',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('temperature',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('humidity',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('wind_speed',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('seeing',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('cloud_cover',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('moon_phase',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='Comments',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('comments',</span> <span class="pre">&lt;django.db.models.fields.TextField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='Instrumentation',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('observing_mode',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('instrument_name',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('filter_in_use',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('exposure_time',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('polarization_mode',</span> <span class="pre">&lt;django.db.models.fields.BooleanField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='Observation',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('target_name',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('right_ascension',</span> <span class="pre">&lt;django.db.models.fields.TimeField&gt;),</span> <span class="pre">('declination',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('air_mass',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('magnitude',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='RemoteOperation',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('remote_access',</span> <span class="pre">&lt;django.db.models.fields.BooleanField&gt;),</span> <span class="pre">('remote_observer',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('emergency_stop',</span> <span class="pre">&lt;django.db.models.fields.BooleanField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;,</span> <span class="pre">&lt;CreateModel</span>&#160; <span class="pre">name='TelescopeConfiguration',</span> <span class="pre">fields=[('id',</span> <span class="pre">&lt;django.db.models.fields.BigAutoField&gt;),</span> <span class="pre">('focus_position',</span> <span class="pre">&lt;django.db.models.fields.FloatField&gt;),</span> <span class="pre">('tracking_mode',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('guiding_status',</span> <span class="pre">&lt;django.db.models.fields.CharField&gt;),</span> <span class="pre">('general_info',</span> <span class="pre">&lt;django.db.models.fields.related.OneToOneField&gt;)]&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0001_initial.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0002_generalinfo_observer_name">
+<span id="logging-system-migrations-0002-generalinfo-observer-name-module"></span><h2>logging_system.migrations.0002_generalinfo_observer_name module<a class="headerlink" href="#module-logging_system.migrations.0002_generalinfo_observer_name" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0002_generalinfo_observer_name.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0002_generalinfo_observer_name.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0002_generalinfo_observer_name.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0002_generalinfo_observer_name.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0002_generalinfo_observer_name.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0001_initial'),</span> <span class="pre">('auth',</span> <span class="pre">'__first__')]</span></em><a class="headerlink" href="#logging_system.migrations.0002_generalinfo_observer_name.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0002_generalinfo_observer_name.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;AddField</span>&#160; <span class="pre">model_name='generalinfo',</span> <span class="pre">name='observer_name',</span> <span class="pre">field=&lt;django.db.models.fields.related.ForeignKey&gt;,</span> <span class="pre">preserve_default=False&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0002_generalinfo_observer_name.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more">
+<span id="logging-system-migrations-0003-rename-operator-name-generalinfo-telescope-operator-and-more-module"></span><h2>logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more module<a class="headerlink" href="#module-logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0003_rename_operator_name_generalinfo_telescope_operator_and_more.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0002_generalinfo_observer_name')]</span></em><a class="headerlink" href="#logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;RenameField</span>&#160; <span class="pre">model_name='generalinfo',</span> <span class="pre">old_name='operator_name',</span> <span class="pre">new_name='telescope_operator'&gt;,</span> <span class="pre">&lt;RemoveField</span>&#160; <span class="pre">model_name='environmentalcondition',</span> <span class="pre">name='cloud_cover'&gt;,</span> <span class="pre">&lt;AddField</span>&#160; <span class="pre">model_name='environmentalcondition',</span> <span class="pre">name='cloud_coverage',</span> <span class="pre">field=&lt;django.db.models.fields.TextField&gt;,</span> <span class="pre">preserve_default=False&gt;,</span> <span class="pre">&lt;AddField</span>&#160; <span class="pre">model_name='observation',</span> <span class="pre">name='calibration',</span> <span class="pre">field=&lt;django.db.models.fields.CharField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0003_rename_operator_name_generalinfo_telescope_operator_and_more.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage">
+<span id="logging-system-migrations-0004-alter-environmentalcondition-cloud-coverage-module"></span><h2>logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage module<a class="headerlink" href="#module-logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0004_alter_environmentalcondition_cloud_coverage.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0003_rename_operator_name_generalinfo_telescope_operator_and_more')]</span></em><a class="headerlink" href="#logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;AlterField</span>&#160; <span class="pre">model_name='environmentalcondition',</span> <span class="pre">name='cloud_coverage',</span> <span class="pre">field=&lt;django.db.models.fields.CharField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0004_alter_environmentalcondition_cloud_coverage.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0005_alter_observation_right_ascension">
+<span id="logging-system-migrations-0005-alter-observation-right-ascension-module"></span><h2>logging_system.migrations.0005_alter_observation_right_ascension module<a class="headerlink" href="#module-logging_system.migrations.0005_alter_observation_right_ascension" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0005_alter_observation_right_ascension.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0005_alter_observation_right_ascension.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0005_alter_observation_right_ascension.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0005_alter_observation_right_ascension.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0005_alter_observation_right_ascension.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0004_alter_environmentalcondition_cloud_coverage')]</span></em><a class="headerlink" href="#logging_system.migrations.0005_alter_observation_right_ascension.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0005_alter_observation_right_ascension.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;AlterField</span>&#160; <span class="pre">model_name='observation',</span> <span class="pre">name='right_ascension',</span> <span class="pre">field=&lt;django.db.models.fields.CharField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0005_alter_observation_right_ascension.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0006_remove_generalinfo_observatory_name">
+<span id="logging-system-migrations-0006-remove-generalinfo-observatory-name-module"></span><h2>logging_system.migrations.0006_remove_generalinfo_observatory_name module<a class="headerlink" href="#module-logging_system.migrations.0006_remove_generalinfo_observatory_name" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0006_remove_generalinfo_observatory_name.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0006_remove_generalinfo_observatory_name.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0005_alter_observation_right_ascension')]</span></em><a class="headerlink" href="#logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;RemoveField</span>&#160; <span class="pre">model_name='generalinfo',</span> <span class="pre">name='observatory_name'&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0006_remove_generalinfo_observatory_name.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0007_remove_observation_air_mass_and_more">
+<span id="logging-system-migrations-0007-remove-observation-air-mass-and-more-module"></span><h2>logging_system.migrations.0007_remove_observation_air_mass_and_more module<a class="headerlink" href="#module-logging_system.migrations.0007_remove_observation_air_mass_and_more" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0007_remove_observation_air_mass_and_more.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0007_remove_observation_air_mass_and_more.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0006_remove_generalinfo_observatory_name')]</span></em><a class="headerlink" href="#logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;RemoveField</span>&#160; <span class="pre">model_name='observation',</span> <span class="pre">name='air_mass'&gt;,</span> <span class="pre">&lt;RemoveField</span>&#160; <span class="pre">model_name='observation',</span> <span class="pre">name='calibration'&gt;,</span> <span class="pre">&lt;RemoveField</span>&#160; <span class="pre">model_name='remoteoperation',</span> <span class="pre">name='emergency_stop'&gt;,</span> <span class="pre">&lt;AddField</span>&#160; <span class="pre">model_name='instrumentation',</span> <span class="pre">name='calibration',</span> <span class="pre">field=&lt;django.db.models.fields.CharField&gt;&gt;,</span> <span class="pre">&lt;AddField</span>&#160; <span class="pre">model_name='telescopeconfiguration',</span> <span class="pre">name='air_mass',</span> <span class="pre">field=&lt;django.db.models.fields.FloatField&gt;&gt;,</span> <span class="pre">&lt;AddField</span>&#160; <span class="pre">model_name='telescopeconfiguration',</span> <span class="pre">name='emergency_stop',</span> <span class="pre">field=&lt;django.db.models.fields.BooleanField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0007_remove_observation_air_mass_and_more.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0008_alter_generalinfo_session_id">
+<span id="logging-system-migrations-0008-alter-generalinfo-session-id-module"></span><h2>logging_system.migrations.0008_alter_generalinfo_session_id module<a class="headerlink" href="#module-logging_system.migrations.0008_alter_generalinfo_session_id" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0008_alter_generalinfo_session_id.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0008_alter_generalinfo_session_id.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0008_alter_generalinfo_session_id.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0008_alter_generalinfo_session_id.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0008_alter_generalinfo_session_id.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0007_remove_observation_air_mass_and_more')]</span></em><a class="headerlink" href="#logging_system.migrations.0008_alter_generalinfo_session_id.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0008_alter_generalinfo_session_id.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;AlterField</span>&#160; <span class="pre">model_name='generalinfo',</span> <span class="pre">name='session_id',</span> <span class="pre">field=&lt;django.db.models.fields.IntegerField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0008_alter_generalinfo_session_id.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations.0009_alter_generalinfo_session_id">
+<span id="logging-system-migrations-0009-alter-generalinfo-session-id-module"></span><h2>logging_system.migrations.0009_alter_generalinfo_session_id module<a class="headerlink" href="#module-logging_system.migrations.0009_alter_generalinfo_session_id" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="logging_system.migrations.0009_alter_generalinfo_session_id.Migration">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">logging_system.migrations.0009_alter_generalinfo_session_id.</span></span><span class="sig-name descname"><span class="pre">Migration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/logging_system/migrations/0009_alter_generalinfo_session_id.html#Migration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#logging_system.migrations.0009_alter_generalinfo_session_id.Migration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Migration</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0009_alter_generalinfo_session_id.Migration.dependencies">
+<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('logging_system',</span> <span class="pre">'0008_alter_generalinfo_session_id')]</span></em><a class="headerlink" href="#logging_system.migrations.0009_alter_generalinfo_session_id.Migration.dependencies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="logging_system.migrations.0009_alter_generalinfo_session_id.Migration.operations">
+<span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[&lt;AlterField</span>&#160; <span class="pre">model_name='generalinfo',</span> <span class="pre">name='session_id',</span> <span class="pre">field=&lt;django.db.models.fields.IntegerField&gt;&gt;]</span></em><a class="headerlink" href="#logging_system.migrations.0009_alter_generalinfo_session_id.Migration.operations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-logging_system.migrations">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-logging_system.migrations" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="logging_system.html" class="btn btn-neutral float-left" title="logging_system package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="users.html" class="btn btn-neutral float-right" title="users package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
