@@ -24,6 +24,10 @@ from django.core.mail import EmailMessage
 from .forms import EmailForm
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 #required for fits file editing
 import io
@@ -272,6 +276,9 @@ def generate_pdf(request, session_id):
 # Send email with PDF attachment 
 def send_email(request, session_id):
     """Send the generated PDF to a user-defined email."""
+
+
+    # predifined recipient list (Admin & miro)
     general = get_object_or_404(GeneralInfo, session_id=session_id)
     recipient_list = [
         "adityaradadiya294@gmail.com",
@@ -279,15 +286,37 @@ def send_email(request, session_id):
         request.user.email
     ]
 
-    
 
+    # additional recipient email and thier validation
+    if request.method == "POST":
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            additional_email = form.cleaned_data.get("recipient_email")
+            if additional_email:
+                email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
+                
+                # Validate each email
+                for email in email_list:
+                    try:
+                        validate_email(email)
+                    except ValidationError:
+                        messages.error(request, f"Invalid email address: {email}")
+                        return redirect("session_detail", session_id=session_id)
+                
+                
+                recipient_list.extend(email_list)
+
+    
+    # Generate PDF for the email attachment
     pdf_path = create_pdf_file(session_id)
     if not pdf_path or not os.path.exists(pdf_path):
         messages.error(request, "Failed to generate PDF. Email not sent.")
         return redirect("session_detail", session_id=session_id)
 
-    general = get_object_or_404(GeneralInfo, session_id=session_id)
-    email_body_html = f"""
+
+    # Create the email body
+    subject = f"{general.telescope_name} Log - {general.log_start_time_utc.strftime('%d %B %Y')}"
+    email_body = f"""
     <html>
     <head></head>
     <body>
@@ -309,58 +338,41 @@ def send_email(request, session_id):
     </body>
     </html>
     """
+
+
+
+    # get sender's email and password
     if request.method == "POST":
-        form = EmailForm(request.POST)
-        if form.is_valid():
-            additional_email = form.cleaned_data.get("recipient_email")
-            if additional_email:
-                email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
-                
-                # Validate each email
-                for email in email_list:
-                    try:
-                        validate_email(email)
-                    except ValidationError:
-                        messages.error(request, f"Invalid email address: {email}")
-                        return redirect("session_detail", session_id=session_id)
-                
-                
-                recipient_list.extend(email_list)
+        smtp_email = request.POST.get("smtp_email")
+        smtp_password = request.POST.get("smtp_password")
 
-            try:
-                email = EmailMessage(
-                    subject=f"{general.telescope_name} Log - {general.log_start_time_utc.strftime('%d %B %Y')}",
-                    body=email_body_html,
-                    from_email=os.getenv("EMAIL_HOST_USER"),
-                    to=recipient_list
-                )
-                email.content_subtype = "html"
-                email.attach_file(pdf_path)
-                email.send()
 
-                messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
-                return redirect("session_detail", session_id=session_id)
-            except Exception as e:
-                messages.error(request, f"Email sending failed: {str(e)}")
-                return redirect("session_detail", session_id=session_id)
-        else:
-            messages.error(request, "Invalid email address provided.")
+    # send email from the sender's email to the recipient list
+        try:
+            msg = MIMEMultipart()
+            msg["From"] = smtp_email
+            msg["To"] = ", ".join(recipient_list)
+            msg["Subject"] = subject
+            msg.attach(MIMEText(email_body, "html"))
 
-    else:
-        form = EmailForm()
+            with open(pdf_path, "rb") as f:
+                part = MIMEApplication(f.read(), _subtype="pdf")
+                part.add_header("Content-Disposition", "attachment", filename=f"Log_{session_id}.pdf")
+                msg.attach(part)
 
-    # Render page again with the form and session details
-    context = {
-        "form": form,
-        "general": general,
-        "environmental_condition": getattr(general, "environmental_condition", None),
-        "observation": getattr(general, "observation", None),
-        "telescope_configuration": getattr(general, "telescope_configuration", None),
-        "instrumentation": getattr(general, "instrumentation", None),
-        "remote_operation": getattr(general, "remote_operation", None),
-        "comments": getattr(general, "comments", None),
-    }
-    return render(request, "logging_system/session_detail.html", context)
+            with smtplib.SMTP("smtp.yourdomain.com", 587) as server:  # Update your domain and port
+                server.starttls()
+                server.login(smtp_email, smtp_password)
+                server.send_message(msg)
+
+            messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
+            return redirect("session_detail", session_id=session_id)
+
+        except Exception as e:
+            messages.error(request, f"Failed to send email: {str(e)}")
+            return redirect("session_detail", session_id=session_id)
+
+    return redirect("session_detail", session_id=session_id)
 
 # Fetch weather data from API
 def fetch_weather_data(request):
