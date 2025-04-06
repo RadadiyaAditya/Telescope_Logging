@@ -2,7 +2,6 @@
 
 A powerful Django-based web application designed to streamline the logging of astronomical observation sessions. It integrates weather data, real-time sidereal time updates, PDF report generation, email delivery, and FITS file editing into a cohesive and user-friendly system.
 
----
 
 ## 🚀 Features
 
@@ -48,7 +47,6 @@ The application supports full lifecycle management of telescope observation sess
 ### Authentication
 - Login required for logging sessions and accessing log history
 
----
 
 ## 🛠 Tech Stack
 
@@ -72,7 +70,107 @@ The application supports full lifecycle management of telescope observation sess
 - **WhiteNoise** – Static file serving in production
 - **Whitenoise Middleware**
 
----
+
+
+## 🧭 System Architecture
+
+```mermaid
+flowchart TD
+    %% Client
+    Client("Client Browser"):::client
+
+    %% Frontend
+    Frontend("Frontend UI (Django Templates)"):::frontend
+
+    %% Real-time Communication
+    Realtime("Real-Time Communication Manager"):::realtime
+
+    %% API Endpoints
+    APIGateway("API Gateway (FastAPI)"):::api
+
+    %% Backend Application Server
+    Backend("Backend Application Server"):::backend
+
+    %% Database
+    DB("Database (SQLite/PostgreSQL)"):::database
+
+    %% Django Project Setup subgraph
+    subgraph "Django Project Setup"
+        managePy("manage.py"):::config
+        settings("Settings"):::config
+        urls("URLs"):::config
+        asgi("ASGI"):::config
+        wsgi("WSGI"):::config
+    end
+
+    %% Logging System Application subgraph
+    subgraph "Logging System App"
+        models("Models"):::backend
+        views("Views"):::backend
+        forms("Forms"):::backend
+        admin("Admin"):::backend
+        tests("Tests"):::backend
+        migrations("Migrations"):::backend
+        consumers("Consumers"):::backend
+        lst("LST Calculations"):::backend
+        templates("Templates"):::frontend
+    end
+
+    %% Relationships between high-level components
+    Client -->|"HTTP"| Frontend
+    Client -->|"REST"| APIGateway
+    Client -->|"WebSocket"| Realtime
+
+    Frontend -->|"renders"| Backend
+    Backend -->|"persists"| DB
+
+    %% Integration of configuration into backend and real-time
+    managePy --> Backend
+    settings --> Backend
+    urls --> Backend
+    asgi -- "configures" --> Realtime
+    wsgi --> Backend
+
+    %% Internal relationships within Logging System App
+    views -->|"uses"| models
+    forms --> views
+    views -->|"renders"| templates
+    consumers -->|"calculates"| lst
+
+    %% Connect API layer to configuration (defining endpoints)
+    urls --> APIGateway
+
+    %% Styles
+    classDef client fill:#ffeb99,stroke:#333,stroke-width:2px;
+    classDef frontend fill:#cce5ff,stroke:#333,stroke-width:2px;
+    classDef realtime fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef backend fill:#f8d7da,stroke:#333,stroke-width:2px;
+    classDef database fill:#fdfd96,stroke:#333,stroke-width:2px;
+    classDef config fill:#e2e3e5,stroke:#333,stroke-width:2px;
+    classDef api fill:#f9c0c0,stroke:#333,stroke-width:2px;
+
+    %% Click Events for Django Project Setup
+    click managePy "https://github.com/radadiyaaditya/telescope_logging/blob/main/manage.py"
+    click settings "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/settings.py"
+    click urls "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/urls.py"
+    click asgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/asgi.py"
+    click wsgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/wsgi.py"
+
+    %% Click Events for Logging System Application
+    click models "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/models.py"
+    click views "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/views.py"
+    click forms "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/forms.py"
+    click admin "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/admin.py"
+    click tests "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/tests.py"
+    click migrations "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/migrations/"
+    click consumers "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/consumers.py"
+    click templates "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/templates/logging_system/"
+    click lst "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/lst.py"
+
+    %% Click Event for API Endpoints Integration
+    click APIGateway "https://github.com/radadiyaaditya/telescope_logging/blob/main/README.md"
+```
+
 
 ## Prerequisites
 
@@ -117,7 +215,7 @@ You will need an email account to send log reports via SMTP:
 ### 6. **WeatherAPI Key**
 Get a free API key from: https://www.weatherapi.com/
 
----
+
 
 ## 📦 Installation Guide
 
@@ -194,7 +292,7 @@ daphne -b 0.0.0.0 -p 8000 telescope_log.asgi:application
 
 Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
----
+
 ## 📁 Project Structure
 ```
 ├── logging_system/
@@ -214,14 +312,14 @@ Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 ├── .env
 ```
 
----
+
 
 ## 🔒 Security Best Practices
 - Always set `DEBUG=False` in production.
 - Never commit your `.env` file to version control.
 - Use TLS (port 587 or 465) when sending email via SMTP.
 
----
+
 
 ## 📬 License & Contact
 This project is private unless otherwise stated. For collaboration, support, or licensing requests, please contact the repository owner.
