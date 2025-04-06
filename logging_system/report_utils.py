@@ -1,4 +1,4 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -105,14 +105,22 @@ def generate_pdf_reportlab(session_data, filepath):
     ])
 
     # Row 3 - Comments only in center
-    add_row([
-        "",
-        Paragraph("Comments", section_title),
-        ""
-    ], [
-        "",
-        make_table([["Comments", session_data['comments']['comments']]]),
-        ""
-    ])
+    comment_text = session_data['comments']['comments']
+    comment_para = Paragraph(comment_text, styles['Normal'])
+    comment_table = Table(
+    [["Comments", comment_para]],
+    colWidths=[3 * cm, 25 * cm],
+    style=[
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (0, 0), colors.whitesmoke)
+    ]
+    )
 
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Comments", section_title))
+    story.append(Spacer(1, 6))
+    story.append(KeepTogether(comment_table))
+    
     doc.build(story)

@@ -11,7 +11,8 @@ class LSTConsumer(AsyncWebsocketConsumer):
         await self.accept()
         while True:
             lst_time = compute_lst(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")  # Get updated LST
-            utc_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            utc_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+  # Get current UTC time
             await self.send(json.dumps({"lst_time": lst_time, "utc_time": utc_time}))
             await asyncio.sleep(1)  # Send update every second
     async def disconnect(self, close_code):

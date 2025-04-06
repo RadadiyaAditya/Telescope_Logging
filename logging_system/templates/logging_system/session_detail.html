@@ -219,7 +219,9 @@
         </div>
         {% endif %}
 
-        <button type="submit" class="btn btn-primary mt-4">Send PDF via Email</button>
+        <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#smtpModal">
+            Send PDF via Email
+        </button>
         <a href="{% url 'download_pdf' general.session_id %}" class="btn btn-primary mt-4">Download as PDF</a>
         <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
     </form>
