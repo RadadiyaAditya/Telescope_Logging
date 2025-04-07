@@ -405,14 +405,14 @@ def send_email(request, session_id):
 
     # get sender's email and password
     if request.method == "POST":
-        smtp_email = request.POST.get("smtp_email")
+        smtp_user = request.POST.get("smtp_user")
         smtp_password = request.POST.get("smtp_password")
 
 
     # send email from the sender's email to the recipient list
         try:
             msg = MIMEMultipart()
-            msg["From"] = smtp_email
+            msg["From"] = smtp_user
             msg["To"] = ", ".join(recipient_list)
             msg["Subject"] = subject
             msg.attach(MIMEText(email_body, "html"))
@@ -422,9 +422,9 @@ def send_email(request, session_id):
                 part.add_header("Content-Disposition", "attachment", filename=f"Log_{session_id}.pdf")
                 msg.attach(part)
 
-            with smtplib.SMTP("smtp.yourdomain.com", 587) as server:  # Update your domain and port
+            with smtplib.SMTP("172.16.0.5", 25) as server:  # Update your domain and port 'start tls'
                 server.starttls()
-                server.login(smtp_email, smtp_password)
+                server.login(smtp_user, smtp_password)
                 server.send_message(msg)
 
             messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")

@@ -1,7 +1,3 @@
 .env
-<<<<<<< HEAD
-staticfiles
-=======
 .staticfiles
 .docs
->>>>>>> c40cb478533698c7001cbfa0f5aa34fbbed5682b
