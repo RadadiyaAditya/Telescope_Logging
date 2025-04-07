@@ -1,3 +1,26 @@
+<!--
+Django template for the main Telescope Log form page.
+
+Features:
+- Uses `crispy_forms` to render all Django forms cleanly.
+- Real-time UTC and LST updates via WebSocket (`/ws/lst/`).
+- Auto-filled observation data, weather from API, and email fields.
+- Button controls for Start Log, End Log, Save, Email, Download PDF.
+
+Form Sections:
+1. General Info, Observation Params, Weather (Row 1)
+2. Instrumentation and Telescope Configuration (Row 2)
+3. Remote Operation and Comments (Row 3)
+4. Log Time (auto-filled from WebSocket, Row 4)
+5. Email + PDF Actions (Row 5)
+
+JavaScript:
+- Handles WebSocket setup to stream real-time UTC/LST.
+- Functions to populate start/end log timestamps.
+- Weather API fetch and form population.
+- Toggle visibility for remote observer field.
+-->
+
 {% extends 'logging_system/base.html' %}
 {% load crispy_forms_tags %} <!-- Load crispy forms -->
 
@@ -34,7 +57,10 @@
             <div class="form-group">
                 <label class="mb-2">Declination (±DD MM SS.ss)</label>
                 <div class="d-flex gap-2 mb-3">
+<<<<<<< HEAD
                     <!--{{ observation_form.dec_sign }}-->
+=======
+>>>>>>> c40cb478533698c7001cbfa0f5aa34fbbed5682b
                     {{ observation_form.dec_degree }}
                     {{ observation_form.dec_minute }}
                     {{ observation_form.dec_second }}
@@ -167,7 +193,7 @@
                         data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
                     <label class="mt-3" for="log_end_time_display_lst">Log End Time (LST)</label>
-                   <!--<<input type="hidden" name="log_end_time_lst" id="id_log_end_time_lst">>-->
+                    <!--<<input type="hidden" name="log_end_time_lst" id="id_log_end_time_lst">>-->
                     <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
                         value="" data-bs-toggle="tooltip" title="This field cannot be edited manually.">
 
@@ -188,14 +214,16 @@
             <small class="form-text text-muted">{{ email_form.recipient_email.help_text }}</small>
         </div>
         {% endif %}
-    </div>
-    <button type="submit" class="btn btn-primary">Save Log</button>
+        <button type="submit" class="btn btn-primary">Save Log</button>
         <button type="submit" name="send_email" class="btn btn-primary">Send PDF via Email</button>
         <button type="submit" name="download_pdf" class="btn btn-primary">Download as PDF</button>
+    </div>
 </form>
 
 
 <script>
+
+    // WebSocket connection to receive real-time UTC and LST updates
 
     const socket = new WebSocket("ws://" + window.location.host + "/ws/lst/");
 
@@ -211,7 +239,7 @@
         try {
             const data = JSON.parse(event.data);
             document.getElementById("lst_time").value = data.lst_time;  // Update LST
-            document.getElementById("utc_time").value = data.utc_time;  // Update UST
+            document.getElementById("utc_time").value = data.utc_time;  // Update UTC
         } catch (err) {
             console.error("Error parsing WebSocket message:", err);
         }
@@ -224,6 +252,9 @@
         }, 5000);
     };
 
+    // Functions to handle log start and end times
+    // These functions will be called when the respective buttons are clicked.
+    // They will populate the log start and end time fields with the current UTC and LST values.
     function startLog() {
         // Get the current UTC and LST values updated via the WebSocket
         const currentUTC = document.getElementById("utc_time").value;
@@ -251,6 +282,8 @@
         document.getElementById("id_log_end_time_lst").value = currentLST;
     }
 
+    // Fetch weather data from the API and populate the form fields
+    // This function is called when the "Get Weather Data" button is clicked.
     document.getElementById("getWeatherBtn").addEventListener("click", function () {
         fetch("/get-weather-data/")
             .then(response => response.json())
@@ -274,6 +307,9 @@
             .catch(error => console.error("Error fetching weather data:", error));
     });
 
+
+    // Toggle visibility of the remote observer field based on radio button selection
+    // This function is called when the page loads and when the radio button selection changes.
     document.addEventListener("DOMContentLoaded", function () {
         const radioButtons = document.querySelectorAll('input[name="remote_access"]');
         const observerContainer = document.getElementById("remote-observer-container");

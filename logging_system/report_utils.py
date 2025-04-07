@@ -1,13 +1,34 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
 def generate_pdf_reportlab(session_data, filepath):
+
+    """
+    Generates a PDF report of a telescope log session using ReportLab.
+
+    This function formats observational data, environmental conditions,
+    telescope settings, and comments into a visually structured PDF
+    using tables and styled paragraphs.
+
+    Args:
+        session_data (dict): A dictionary containing all observational session data
+                             structured by category (general, weather, observation, etc.).
+        filepath (str): Full file path where the generated PDF will be saved.
+
+    Returns:
+        None: Writes output directly to the given `filepath`.
+    """
+
     doc = SimpleDocTemplate(filepath, pagesize=landscape(A4), rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
     styles = getSampleStyleSheet()
-    story = []
+    story = [] # This list will contain all flowable PDF elements (Paragraphs, Tables, etc.)
+
+    # ─────────────────────────────────────────────
+    # Title Section
+    # ─────────────────────────────────────────────
 
     # Title
     title_style = styles['Title']
@@ -15,11 +36,15 @@ def generate_pdf_reportlab(session_data, filepath):
     story.append(Paragraph(f"Session Details: {session_data['session_id']}", title_style))
     story.append(Spacer(1, 12))
 
+
+    # Custom style for section headers
     # Section header style
     section_title = ParagraphStyle(
         'SectionHeader', fontSize=10, leading=12, alignment=1,
         spaceAfter=6, spaceBefore=6, fontName='Helvetica-Bold', textTransform='uppercase'
     )
+
+    # Table styling used across the report
 
     table_style = TableStyle([
         ('BACKGROUND', (0,0), (0,-1), colors.whitesmoke),
@@ -32,15 +57,23 @@ def generate_pdf_reportlab(session_data, filepath):
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
     ])
 
+
+    # Helper function to generate a uniform table with custom widths
     def make_table(data):
         return Table(data, colWidths=[3.5*cm, 5.3*cm], style=table_style, hAlign='CENTER')
 
+
+    # Helper function to render a 3-column row with titles and corresponding data tables
     def add_row(title_row, data_row):
         title_with_spacing = [title_row[0], "", title_row[1], "", title_row[2]]
         data_with_spacing = [data_row[0], "", data_row[1], "", data_row[2]]
 
+
+        # Render the header row
         story.append(Table([title_with_spacing], colWidths=[8.5*cm, 0.5*cm, 8.5*cm, 0.5*cm, 9*cm], style=[('VALIGN', (0, 0), (-1, -1), 'TOP')]))
         story.append(Spacer(1, 8))
+
+        # Render the data row
         story.append(Table([data_with_spacing], colWidths=[8.5*cm, 0.5*cm, 8.5*cm, 0.5*cm, 9*cm], style=[
             ('VALIGN', (0, 0), (-1, -1), 'TOP')
         ]))
@@ -105,14 +138,22 @@ def generate_pdf_reportlab(session_data, filepath):
     ])
 
     # Row 3 - Comments only in center
-    add_row([
-        "",
-        Paragraph("Comments", section_title),
-        ""
-    ], [
-        "",
-        make_table([["Comments", session_data['comments']['comments']]]),
-        ""
-    ])
+    comment_text = session_data['comments']['comments']
+    comment_para = Paragraph(comment_text, styles['Normal'])
+    comment_table = Table(
+    [["Comments", comment_para]],
+    colWidths=[3 * cm, 25 * cm],
+    style=[
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (0, 0), colors.whitesmoke)
+    ]
+    )
 
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Comments", section_title))
+    story.append(Spacer(1, 6))
+    story.append(KeepTogether(comment_table))
+    
     doc.build(story)

@@ -1,0 +1,411 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.forms &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">telescope_log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../logging_system.html">logging_system package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">logging_system.forms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for logging_system.forms</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Forms for the Telescope Logging System.</span>
+
+<span class="sd">Each form maps to a corresponding model or functional utility:</span>
+<span class="sd">- GeneralInfoForm: Main session metadata (hidden + visible fields)</span>
+<span class="sd">- EnvironmentalConditionForm: Atmospheric data inputs</span>
+<span class="sd">- ObservationForm: Target object info, split RA/Dec</span>
+<span class="sd">- TelescopeConfigurationForm: Setup for tracking, guiding, focus</span>
+<span class="sd">- InstrumentationForm: Instrument and exposure setup</span>
+<span class="sd">- RemoteOperationForm: Remote control session toggles</span>
+<span class="sd">- CommentForm: Freeform remarks</span>
+<span class="sd">- EmailForm: For sending PDFs via email</span>
+<span class="sd">- FitsUploadForm: For FITS file metadata injection</span>
+
+<span class="sd">All forms are compatible with crispy-forms and integrate Bootstrap classes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">django</span><span class="w"> </span><span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GeneralInfo</span><span class="p">,</span> <span class="n">EnvironmentalCondition</span><span class="p">,</span> <span class="n">TelescopeConfiguration</span><span class="p">,</span> 
+    <span class="n">Observation</span><span class="p">,</span> <span class="n">Instrumentation</span><span class="p">,</span> <span class="n">RemoteOperation</span><span class="p">,</span> <span class="n">Comments</span>
+<span class="p">)</span>
+
+<span class="c1"># General Information Form</span>
+<div class="viewcode-block" id="GeneralInfoForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.GeneralInfoForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralInfoForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for capturing general session-level observation metadata.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        observer_name: This will be set automatically from the user session.</span>
+
+<span class="sd">    Widgets:</span>
+<span class="sd">        - log_start_time_utc, log_start_time_lst, log_end_time_utc, log_end_time_lst:</span>
+<span class="sd">            Hidden inputs since they are populated automatically.</span>
+<span class="sd">        - lst_time, utc_time:</span>
+<span class="sd">            Displayed but readonly fields for LST/UTC time inputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeneralInfoForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.GeneralInfoForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">GeneralInfo</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;observer_name&#39;</span><span class="p">]</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="c1"># these parameters are in database but will be hidden on webapp</span>
+            <span class="s1">&#39;log_start_time_utc&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+            <span class="s1">&#39;log_start_time_lst&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+            <span class="s1">&#39;log_end_time_utc&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+            <span class="s1">&#39;log_end_time_lst&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+
+            <span class="c1"># these parameters are not in databse but will be shown on webapp</span>
+            <span class="s1">&#39;lst_time&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime-local&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;utc_time&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime-local&#39;</span><span class="p">}),</span>
+            <span class="p">}</span></div>
+</div>
+
+        
+<span class="c1"># Environmental Conditions Form</span>
+<div class="viewcode-block" id="EnvironmentalConditionForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.EnvironmentalConditionForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnvironmentalConditionForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form to input environmental conditions during the observation session.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        general_info: Linked via relationship.</span>
+
+<span class="sd">    Widgets:</span>
+<span class="sd">        Form controls for temperature, humidity, wind, seeing, cloud coverage, and moon phase.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EnvironmentalConditionForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.EnvironmentalConditionForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">EnvironmentalCondition</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">]</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;humidity&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;wind_speed&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;seeing&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">,</span> <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;cloud_coverage&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;moon_phase&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}),</span>
+        <span class="p">}</span></div>
+</div>
+
+<span class="c1"># Observation Form</span>
+<div class="viewcode-block" id="ObservationForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.ObservationForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservationForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for recording observational target parameters including RA/Dec fields.</span>
+
+<span class="sd">    Custom Fields:</span>
+<span class="sd">        - RA (hour, minute, second): Input split for RA.</span>
+<span class="sd">        - Dec (degree, minute, second): Input split for Declination.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        - general_info: Linked via relationship. </span>
+<span class="sd">        - right_ascension, declination: Combined from subfields.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        clean(): Combines individual RA/Dec fields into formatted strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ra_hour</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;RA Hours&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;HH&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+    <span class="n">ra_minute</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;RA Minutes&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">59</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;MM&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+    <span class="n">ra_second</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;RA Seconds&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mf">59.999</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;SS.ss&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+ 
+    <span class="n">dec_degree</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Dec Degrees&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=-</span><span class="mi">90</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;DD&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+    <span class="n">dec_minute</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Dec Minutes&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mi">59</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;MM&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+    <span class="n">dec_second</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Dec Seconds&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mf">59.999</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;SS.ss&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;form-control&#39;</span><span class="p">}))</span>
+<div class="viewcode-block" id="ObservationForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.ObservationForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Observation</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">,</span> <span class="s1">&#39;right_ascension&#39;</span><span class="p">,</span> <span class="s1">&#39;declination&#39;</span><span class="p">]</span></div>
+
+
+    <span class="n">target_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Target name (as per SIMBAD)&quot;</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;form-control&quot;</span><span class="p">}),</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="ObservationForm.clean">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.ObservationForm.clean">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates and combines RA and Dec inputs into single formatted strings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Cleaned data with added right_ascension and declination fields.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            forms.ValidationError: If RA/Dec components are missing or invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ra</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;ra_hour&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;ra_minute&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;ra_second&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">05.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">dec</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;dec_degree&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;dec_minute&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;dec_second&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">05.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;right_ascension&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ra</span>
+            <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;declination&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dec</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="s2">&quot;Invalid RA/Dec format.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span></div>
+</div>
+
+
+
+<span class="c1"># Telescope Configuration Form</span>
+<div class="viewcode-block" id="TelescopeConfigurationForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.TelescopeConfigurationForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TelescopeConfigurationForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for configuring telescope hardware settings.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        general_info: Linked via relationship.</span>
+
+<span class="sd">    Widgets:</span>
+<span class="sd">        Numeric inputs for pointing accuracy and focus position.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TelescopeConfigurationForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.TelescopeConfigurationForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">TelescopeConfiguration</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">]</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;pointing_accuracy&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+            <span class="s1">&#39;focus_position&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<span class="c1"># Instrumentation Form</span>
+<div class="viewcode-block" id="InstrumentationForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.InstrumentationForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InstrumentationForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for specifying instrument settings and exposure configurations.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        general_info: Linked via relationship.</span>
+
+<span class="sd">    Fields:</span>
+<span class="sd">        exposure_time: Float input with step control.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InstrumentationForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.InstrumentationForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Instrumentation</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">]</span></div>
+
+
+    <span class="n">exposure_time</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FloatField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Exposure Time (sec)&quot;</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">NumberInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="s1">&#39;0.1&#39;</span><span class="p">}),</span>
+    <span class="p">)</span></div>
+
+
+<span class="c1"># Remote Operation Form</span>
+<div class="viewcode-block" id="RemoteOperationForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.RemoteOperationForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RemoteOperationForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form to manage and record remote observation capabilities.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        general_info: Linked via relationship.</span>
+
+<span class="sd">    Fields:</span>
+<span class="sd">        remote_access: Radio button selection for Yes/No.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">REMOTE_ACCESS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Yes&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;No&#39;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">remote_access</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Remote Access&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">REMOTE_ACCESS_CHOICES</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">RadioSelect</span><span class="p">,</span>
+    <span class="p">)</span>
+<div class="viewcode-block" id="RemoteOperationForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.RemoteOperationForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">RemoteOperation</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="CommentForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.CommentForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CommentForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for adding optional comments related to the session.</span>
+
+<span class="sd">    Excludes:</span>
+<span class="sd">        general_info: Linked via relationship.</span>
+
+<span class="sd">    Widgets:</span>
+<span class="sd">        Multiline textarea for user comments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CommentForm.Meta">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.CommentForm.Meta">[docs]</a>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Comments</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s1">&#39;__all__&#39;</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;general_info&#39;</span><span class="p">]</span>
+        <span class="n">widgets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;comments&#39;</span><span class="p">:</span> <span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;cols&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;placeholder&#39;</span><span class="p">:</span> <span class="s1">&#39;Enter comments here...&#39;</span><span class="p">}),</span>
+        <span class="p">}</span></div>
+</div>
+
+
+<div class="viewcode-block" id="EmailForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.EmailForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EmailForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple form for entering recipient email addresses for email functionality.</span>
+
+<span class="sd">    Fields:</span>
+<span class="sd">        recipient_email (str): Comma-separated list of email addresses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">recipient_email</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                                       <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;If you want to send mail to multiple addresses, separate emails with commas.&quot;</span><span class="p">,</span>  
+                                       <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;form-control&quot;</span><span class="p">,</span> <span class="s2">&quot;placeholder&quot;</span><span class="p">:</span> <span class="s2">&quot;example1@gmail.com, example2@gmail.com&quot;</span><span class="p">}))</span></div>
+
+
+<div class="viewcode-block" id="FitsUploadForm">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.forms.FitsUploadForm">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FitsUploadForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Form for uploading a FITS file.</span>
+
+<span class="sd">    Fields:</span>
+<span class="sd">        fits_file (FileField): FITS file to be uploaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fits_file</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Upload FITS File&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

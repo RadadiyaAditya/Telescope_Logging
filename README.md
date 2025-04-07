@@ -1,30 +1,80 @@
-# Telescope Log Web Application
+# 🌌 Telescope Logging System
 
-## Overview
+A powerful Django-based web application designed to streamline the logging of astronomical observation sessions. It integrates weather data, real-time sidereal time updates, PDF report generation, email delivery, and FITS file editing into a cohesive and user-friendly system.
 
-A **web-based Telescope Logging System** built with **Django (Framework)** and **PostrgreSQL (Database)** to facilitate **astronomical observation logging**. It includes features such as user authentication, real-time updates using Django Channels, and PDF report generation.
 
-## Features
+## 🚀 Features
 
-- User authentication and management
-- Real-time updates with Django Channels
-- PDF report generation using `pdfkit`
-- Responsive design with Bootstrap 5
+The application supports full lifecycle management of telescope observation sessions, including:
 
-## Tech Stack
+### Logging System
+- Capture detailed observational data:
+  - General session information
+  - Telescope and instrumentation configuration
+  - Environmental and weather conditions
+  - Target observation details
+  - Remote operations
+  - User comments
 
-- **Backend:** Django
-- **Frontend:** HTML, Django Templates
-- **Database:** PostgreSQL / SQLite
-- **Real-time Communication:** Django Channels (WebSockets)
-- **Version Control:** Git & GitHub
+### Real-Time UTC & LST Clock
+- Live streaming of UTC and Local Sidereal Time using WebSockets
+- One-click Start/End log timestamps using real-time values
 
-## Diagram
+### Weather Integration
+- Real-time weather data fetching (temperature, humidity, wind speed, cloud coverage) from WeatherAPI
+
+### PDF Generation
+- Automatically generates a well-formatted PDF report of each session using ReportLab
+
+### Email PDF Delivery
+- Email session logs as PDFs via:
+  - Predefined admin addresses
+  - User-provided email list
+  - SMTP login popup for secure email sending
+
+### FITS File Header Injection
+- Upload a `.fits` file and inject session metadata into its header fields
+- Download the modified FITS file immediately
+
+### Log Filtering & History
+- Search logs by:
+  - Session ID
+  - Operator name
+  - Target name
+  - Instrument name
+  - Observation date
+
+### Authentication
+- Login required for logging sessions and accessing log history
+
+
+## 🛠 Tech Stack
+
+### Backend
+- **Python 3.11+**
+- **Django 5.1.7**
+- **PostgreSQL**
+- **Django Channels** – real-time LST updates via WebSockets
+- **ReportLab** – PDF generation
+- **AstroPy** – FITS file handling
+- **requests** – Weather API integration
+- **python-dotenv** – Environment variable management
+
+### Frontend
+- **Bootstrap 5**
+- **Crispy Forms (bootstrap5 pack)**
+- **JavaScript** – AJAX & WebSocket client integration
+- **Django Templating Engine**
+
+### Deployment
+- **WhiteNoise** – Static file serving in production
+- **Whitenoise Middleware**
+
+
+
+## 🧭 System Architecture
+
 ```mermaid
-%% A custom initialization block for a pastel-lavender background
-%% (May not always display on GitHub, but works in Mermaid Live Editor or custom setups)
-%%{init: {'theme': 'default', 'themeVariables': { 'background': '#F3E5F5'}}}%%
-
 flowchart TD
     %% Client
     Client("Client Browser"):::client
@@ -55,182 +105,228 @@ flowchart TD
 
     %% Logging System Application subgraph
     subgraph "Logging System App"
-        forms("Forms"):::backend
-        views("Views"):::backend
-        consumers("Consumers"):::backend
         models("Models"):::backend
-        templates("Templates"):::frontend
-        lst("LST Calculations"):::backend
+        views("Views"):::backend
+        forms("Forms"):::backend
         admin("Admin"):::backend
         tests("Tests"):::backend
         migrations("Migrations"):::backend
+        consumers("Consumers"):::backend
+        lst("LST Calculations"):::backend
+        templates("Templates"):::frontend
     end
 
     %% Relationships between high-level components
-    Client -->|"HTTP Request"| Frontend
-    Client -->|"REST API Calls"| APIGateway
-    Client -->|"WebSocket Connection"| Realtime
+    Client -->|"HTTP"| Frontend
+    Client -->|"REST"| APIGateway
+    Client -->|"WebSocket"| Realtime
 
-    Frontend -->|"Renders Data"| Backend
-    Backend -->|"Stores Data"| DB
+    Frontend -->|"renders"| Backend
+    Backend -->|"persists"| DB
 
     %% Integration of configuration into backend and real-time
     managePy --> Backend
     settings --> Backend
     urls --> Backend
-    asgi -- "Configures WebSocket" --> Realtime
+    asgi -- "configures" --> Realtime
     wsgi --> Backend
 
     %% Internal relationships within Logging System App
-    views -->|"Uses"| models
+    views -->|"uses"| models
     forms --> views
-    views -->|"Renders"| templates
-    consumers -->|"Performs Calculations"| lst
+    views -->|"renders"| templates
+    consumers -->|"calculates"| lst
 
     %% Connect API layer to configuration (defining endpoints)
     urls --> APIGateway
 
-    %% Pastel Styles for a Light Theme
-    classDef client fill:#FFE4E1,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef frontend fill:#CFE2F3,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef realtime fill:#D9EAD3,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef backend fill:#F4CCCC,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef database fill:#FFF2CC,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef config fill:#EEEEEE,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
-    classDef api fill:#F9C0C0,stroke:#333,stroke-width:2px,font-size:14px,color:#000;
+    %% Styles
+    classDef client fill:#ffeb99,stroke:#333,stroke-width:2px;
+    classDef frontend fill:#cce5ff,stroke:#333,stroke-width:2px;
+    classDef realtime fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef backend fill:#f8d7da,stroke:#333,stroke-width:2px;
+    classDef database fill:#fdfd96,stroke:#333,stroke-width:2px;
+    classDef config fill:#e2e3e5,stroke:#333,stroke-width:2px;
+    classDef api fill:#f9c0c0,stroke:#333,stroke-width:2px;
 
-    %% Clickable GitHub Links (with tooltips)
-    click managePy "https://github.com/radadiyaaditya/telescope_logging/blob/main/manage.py" "Django Management Script"
-    click settings "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/settings.py" "Django Settings"
-    click urls "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/urls.py" "Django URL Configurations"
-    click asgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/asgi.py" "Django ASGI Config"
-    click wsgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/wsgi.py" "Django WSGI Config"
+    %% Click Events for Django Project Setup
+    click managePy "https://github.com/radadiyaaditya/telescope_logging/blob/main/manage.py"
+    click settings "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/settings.py"
+    click urls "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/urls.py"
+    click asgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/asgi.py"
+    click wsgi "https://github.com/radadiyaaditya/telescope_logging/blob/main/telescope_log/wsgi.py"
 
-    click models "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/models.py" "Django Models"
-    click views "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/views.py" "Django Views"
-    click forms "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/forms.py" "Django Forms"
-    click admin "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/admin.py" "Django Admin Panel"
-    click tests "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/tests.py" "Django Test Cases"
-    click migrations "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/migrations/" "Django Migrations"
-    click consumers "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/consumers.py" "Django WebSockets Consumers"
-    click templates "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/templates/logging_system/" "Django Templates"
-    click lst "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/lst.py" "Local Sidereal Time Calculations"
+    %% Click Events for Logging System Application
+    click models "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/models.py"
+    click views "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/views.py"
+    click forms "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/forms.py"
+    click admin "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/admin.py"
+    click tests "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/tests.py"
+    click migrations "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/migrations/"
+    click consumers "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/consumers.py"
+    click templates "https://github.com/radadiyaaditya/telescope_logging/tree/main/logging_system/templates/logging_system/"
+    click lst "https://github.com/radadiyaaditya/telescope_logging/blob/main/logging_system/lst.py"
 
-    click APIGateway "https://github.com/radadiyaaditya/telescope_logging/blob/main/README.md" "FastAPI Gateway"
+    %% Click Event for API Endpoints Integration
+    click APIGateway "https://github.com/radadiyaaditya/telescope_logging/blob/main/README.md"
 ```
 
-## Installation
-
-### Prerequisites
-
-- Python 3.8+
-- PostgreSQL
-- wkhtmltopdf
-
-### Setup
-
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/yourusername/telescope_log_webapp.git
-    cd telescope_log_webapp
-    ```
-
-2. Create and activate a virtual environment:
-    ```sh
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-
-3. Install the required packages:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-4. Set up the PostgreSQL database and update the `.env` file with your database credentials:
-    ```
-    DATABASE_NAME=your_db_name
-    DATABASE_USER=your_db_user
-    DATABASE_PASSWORD=your_db_password
-    DATABASE_HOST=your_db_host
-    DATABASE_PORT=your_db_port
-    ```
-
-5. Apply the database migrations:
-    ```sh
-    python manage.py migrate
-    ```
-
-6. Collect static files:
-    ```sh
-    python manage.py collectstatic
-    ```
-
-7. Run the development server:
-    ```sh
-    daphne -b 0.0.0.0 -p 8000 telescope_log.asgi:application
-    ```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory and add the following environment variables:
-
-```
-DJANGO_SECRET_KEY=your_secret_key
-DEBUG=False
-ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_NAME=your_db_name
-DATABASE_USER=your_db_user
-DATABASE_PASSWORD=your_db_password
-DATABASE_HOST=your_db_host
-DATABASE_PORT=your_db_port
+## Documentation
+Access the whole documentation on index.html file at:
+```bash
+Telescope_Logging\docs\build\html\index.html
 ```
 
-### PDFKit Configuration
+## Prerequisites
 
-Ensure `wkhtmltopdf` is installed and update the `WKHTMLTOPDF_PATH` in `settings.py`:
+Ensure you have the following tools and services installed before setting up the Telescope Logging System:
 
-```python
-WKHTMLTOPDF_PATH = r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+### 1. **Python 3.11 or higher**
+Download: https://www.python.org/downloads/
+
+Check version:
+```bash
+python --version
 ```
 
-## Usage
+### 2. **PostgreSQL**
+Install PostgreSQL based on your operating system and add PATH to your system variable:
+- [Ubuntu/Debian](https://www.postgresql.org/download/linux/ubuntu/)
+- [Windows](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
+- [Mac](https://postgresapp.com/)
 
-### Running the Server
+Start PostgreSQL and verify access:
+```bash
+psql -U postgres
+```
 
-To start the server, run:
+### 3. **Git**
+Required to clone the repository.
+```bash
+git --version
+```
 
-```sh
+### 4. **Virtual Environment (venv)**
+Ensure venv is available with Python:
+```bash
+python -m venv --help
+```
+
+### 5. **SMTP-Compatible Email Account**
+You will need an email account to send log reports via SMTP:
+- Gmail (App Password recommended)
+- Custom SMTP (e.g., `smtp.gmail.com`)
+
+### 6. **WeatherAPI Key**
+Get a free API key from: https://www.weatherapi.com/
+
+
+
+## 📦 Installation Guide
+
+Follow these steps to install and run the application locally:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/RadadiyaAditya/Telescope_Logging.git
+cd Telescope_Logging
+```
+
+### 2. Create a Python Virtual Environment
+```bash
+python -m venv tele
+source tele/bin/activate  # Windows: tele\Scripts\activate
+```
+
+### 3. Install Python Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+Create a `.env` file in the root directory:
+```ini
+DJANGO_SECRET_KEY=your-django-secret-key
+DEBUG=True
+
+# PostgreSQL
+DATABASE_NAME=your_db_name     (eg. telescope_log)
+DATABASE_USER=your_db_user     (eg. telescope_user)
+DATABASE_PASSWORD=your_db_password    (eg. tele123)
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+
+# Email
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_email_password
+
+# Weather API
+Weather_API=your_weatherapi_key
+```
+
+### 5. Set Up PostgreSQL Database
+
+Start PostgreSQL and verify access:
+```bash
+psql -U postgres
+```
+
+Log into PostgreSQL and execute:
+```sql
+CREATE DATABASE telescope_log;
+CREATE USER telescope_user WITH PASSWORD 'tele123';
+GRANT ALL PRIVILEGES ON DATABASE telescope_log TO telescope_user;
+ALTER DATABASE telescope_log OWNER TO telescope_user;
+```
+
+### 6. Apply Django Migrations
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### 7. Create a Superuser Account
+```bash
+python manage.py createsuperuser
+```
+
+### 8. Run the Server
+```bash
 daphne -b 0.0.0.0 -p 8000 telescope_log.asgi:application
 ```
 
-### Accessing the Application
+Visit: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
-Open your web browser and navigate to `http://127.0.0.1:8000/`.
 
-### Admin Interface
+## 📁 Project Structure
+```
+├── logging_system/
+│   ├── views.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   ├── templates/
+│   ├── static/
+├── telescope_log/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   ├── wsgi.py
+├── manage.py
+├── requirements.txt
+├── .env
+```
 
-Access the Django admin interface at `http://127.0.0.1:8000/admin/`. Use the superuser credentials created during the setup.
 
-## Contributing
 
-Contributions are welcome! Please follow these steps:
+## 🔒 Security Best Practices
+- Always set `DEBUG=False` in production.
+- Never commit your `.env` file to version control.
+- Use TLS (port 587 or 465) when sending email via SMTP.
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -m 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
 
-## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) file for details.
+## 📬 License & Contact
+This project is private unless otherwise stated. For collaboration, support, or licensing requests, please contact the repository owner.
 
-## Acknowledgements
-
-- [Django](https://www.djangoproject.com/)
-- [Bootstrap](https://getbootstrap.com/)
-- [wkhtmltopdf](https://wkhtmltopdf.org/)
+---

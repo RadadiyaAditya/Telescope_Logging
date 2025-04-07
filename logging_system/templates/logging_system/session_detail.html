@@ -1,3 +1,21 @@
+<!--
+Django template to display a detailed read-only view of a single observation session.
+
+Main Features:
+- Displays all recorded data grouped into 3 rows:
+1. General info, Environmental conditions, Observation params
+2. Telescope configuration, Instrumentation, Remote operations
+3. Optional comments block (if present)
+- Offers options to:
+- Send PDF via email using an SMTP login popup modal
+- Download the session report as PDF
+- Return to the logs overview
+
+Styling:
+- Bootstrap table layout with striped, bordered formatting
+- Modal dialog for SMTP email input
+-->
+
 {% extends 'logging_system/base.html' %}
 
 {% block content %}
@@ -208,20 +226,42 @@
 </div>
 
 
-<div class="container mb-4">
-    <form method="post" action="{% url 'send_email' general.session_id %}">
-        {% csrf_token %}
-        {% if email_form %}
-        <div class="form-group">
-            {{ email_form.recipient_email.label_tag }}
-            {{ email_form.recipient_email }}
-            <small class="form-text text-muted">{{ email_form.recipient_email.help_text }}</small>
-        </div>
-        {% endif %}
+<!-- Buttons for PDF download and email sending -->
+<div class="container text-center mb-4">
+    <button type="button" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#smtpModal">
+        Send PDF via Email
+    </button>
+    <a href="{% url 'download_pdf' general.session_id %}" class="btn btn-primary mt-4">Download as PDF</a>
+    <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
+</div>
 
-        <button type="submit" class="btn btn-primary mt-4">Send PDF via Email</button>
-        <a href="{% url 'download_pdf' general.session_id %}" class="btn btn-primary mt-4">Download as PDF</a>
-        <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
-    </form>
+<!-- Popup for SMTP Email Login -->
+<div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'send_email' general.session_id %}">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="smtpModalLabel">SMTP Email Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="smtp_email" class="form-label">Your Email</label>
+                        <input type="email" class="form-control" id="smtp_email" name="smtp_email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" required>
+                    </div>
+                    {{ email_form.recipient_email.label_tag }}
+                    {{ email_form.recipient_email }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Send Email</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

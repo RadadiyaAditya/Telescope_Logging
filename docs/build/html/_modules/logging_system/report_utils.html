@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>logging_system.report_utils &mdash; Telescope Logging 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Telescope Logging
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">telescope_log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../logging_system.html">logging_system package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../telescope_log.html">telescope_log package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../users.html">users package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Telescope Logging</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">logging_system.report_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for logging_system.report_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">reportlab.platypus</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleDocTemplate</span><span class="p">,</span> <span class="n">Paragraph</span><span class="p">,</span> <span class="n">Spacer</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">TableStyle</span><span class="p">,</span> <span class="n">KeepTogether</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">reportlab.lib.pagesizes</span><span class="w"> </span><span class="kn">import</span> <span class="n">A4</span><span class="p">,</span> <span class="n">landscape</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">reportlab.lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">colors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">reportlab.lib.styles</span><span class="w"> </span><span class="kn">import</span> <span class="n">getSampleStyleSheet</span><span class="p">,</span> <span class="n">ParagraphStyle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">reportlab.lib.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+
+<div class="viewcode-block" id="generate_pdf_reportlab">
+<a class="viewcode-back" href="../../logging_system.html#logging_system.report_utils.generate_pdf_reportlab">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_pdf_reportlab</span><span class="p">(</span><span class="n">session_data</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a PDF report of a telescope log session using ReportLab.</span>
+
+<span class="sd">    This function formats observational data, environmental conditions,</span>
+<span class="sd">    telescope settings, and comments into a visually structured PDF</span>
+<span class="sd">    using tables and styled paragraphs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session_data (dict): A dictionary containing all observational session data</span>
+<span class="sd">                             structured by category (general, weather, observation, etc.).</span>
+<span class="sd">        filepath (str): Full file path where the generated PDF will be saved.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None: Writes output directly to the given `filepath`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">SimpleDocTemplate</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">pagesize</span><span class="o">=</span><span class="n">landscape</span><span class="p">(</span><span class="n">A4</span><span class="p">),</span> <span class="n">rightMargin</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="n">leftMargin</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="n">topMargin</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="n">bottomMargin</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">cm</span><span class="p">)</span>
+    <span class="n">styles</span> <span class="o">=</span> <span class="n">getSampleStyleSheet</span><span class="p">()</span>
+    <span class="n">story</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># This list will contain all flowable PDF elements (Paragraphs, Tables, etc.)</span>
+
+    <span class="c1"># ─────────────────────────────────────────────</span>
+    <span class="c1"># Title Section</span>
+    <span class="c1"># ─────────────────────────────────────────────</span>
+
+    <span class="c1"># Title</span>
+    <span class="n">title_style</span> <span class="o">=</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">]</span>
+    <span class="n">title_style</span><span class="o">.</span><span class="n">fontSize</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Paragraph</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Session Details: </span><span class="si">{</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">title_style</span><span class="p">))</span>
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+
+
+    <span class="c1"># Custom style for section headers</span>
+    <span class="c1"># Section header style</span>
+    <span class="n">section_title</span> <span class="o">=</span> <span class="n">ParagraphStyle</span><span class="p">(</span>
+        <span class="s1">&#39;SectionHeader&#39;</span><span class="p">,</span> <span class="n">fontSize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">leading</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">alignment</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">spaceAfter</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">spaceBefore</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">fontName</span><span class="o">=</span><span class="s1">&#39;Helvetica-Bold&#39;</span><span class="p">,</span> <span class="n">textTransform</span><span class="o">=</span><span class="s1">&#39;uppercase&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Table styling used across the report</span>
+
+    <span class="n">table_style</span> <span class="o">=</span> <span class="n">TableStyle</span><span class="p">([</span>
+        <span class="p">(</span><span class="s1">&#39;BACKGROUND&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">colors</span><span class="o">.</span><span class="n">whitesmoke</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;TEXTCOLOR&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">colors</span><span class="o">.</span><span class="n">black</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;ALIGN&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;LEFT&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;FONTNAME&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;Helvetica&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;FONTSIZE&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;BOTTOMPADDING&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;TOPPADDING&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;GRID&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">colors</span><span class="o">.</span><span class="n">grey</span><span class="p">),</span>
+    <span class="p">])</span>
+
+
+    <span class="c1"># Helper function to generate a uniform table with custom widths</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_table</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">colWidths</span><span class="o">=</span><span class="p">[</span><span class="mf">3.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">5.3</span><span class="o">*</span><span class="n">cm</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="n">table_style</span><span class="p">,</span> <span class="n">hAlign</span><span class="o">=</span><span class="s1">&#39;CENTER&#39;</span><span class="p">)</span>
+
+
+    <span class="c1"># Helper function to render a 3-column row with titles and corresponding data tables</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_row</span><span class="p">(</span><span class="n">title_row</span><span class="p">,</span> <span class="n">data_row</span><span class="p">):</span>
+        <span class="n">title_with_spacing</span> <span class="o">=</span> <span class="p">[</span><span class="n">title_row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">title_row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">title_row</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="n">data_with_spacing</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data_row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">data_row</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+
+
+        <span class="c1"># Render the header row</span>
+        <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Table</span><span class="p">([</span><span class="n">title_with_spacing</span><span class="p">],</span> <span class="n">colWidths</span><span class="o">=</span><span class="p">[</span><span class="mf">8.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">8.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mi">9</span><span class="o">*</span><span class="n">cm</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;VALIGN&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;TOP&#39;</span><span class="p">)]))</span>
+        <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+        <span class="c1"># Render the data row</span>
+        <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Table</span><span class="p">([</span><span class="n">data_with_spacing</span><span class="p">],</span> <span class="n">colWidths</span><span class="o">=</span><span class="p">[</span><span class="mf">8.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">8.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">cm</span><span class="p">,</span> <span class="mi">9</span><span class="o">*</span><span class="n">cm</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;VALIGN&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;TOP&#39;</span><span class="p">)</span>
+        <span class="p">]))</span>
+        <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">36</span><span class="p">))</span>
+
+    <span class="c1"># Row 1</span>
+    <span class="n">add_row</span><span class="p">([</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;General Information&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">),</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Weather Parameters&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">),</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Observation Parameters&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">)</span>
+    <span class="p">],</span> <span class="p">[</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Telescope&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;telescope_name&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;telescope_operator&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Observer&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;observer_name&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Log Start (UTC)&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;log_start_time_utc&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Log Start (LST)&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;log_start_time_lst&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Log End (UTC)&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;log_end_time_utc&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Log End (LST)&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;general&#39;</span><span class="p">][</span><span class="s1">&#39;log_end_time_lst&#39;</span><span class="p">]],</span>
+        <span class="p">]),</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Temperature (°C)&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;temperature&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Humidity&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;humidity&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Wind Speed&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;wind_speed&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Seeing&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;seeing&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Cloud Cover&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;cloud_coverage&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Moon Phase&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;weather&#39;</span><span class="p">][</span><span class="s1">&#39;moon_phase&#39;</span><span class="p">]],</span>
+        <span class="p">]),</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Target&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">][</span><span class="s1">&#39;target_name&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Right Ascension&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">][</span><span class="s1">&#39;right_ascension&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Declination&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">][</span><span class="s1">&#39;declination&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Magnitude&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">][</span><span class="s1">&#39;magnitude&#39;</span><span class="p">]],</span>
+        <span class="p">])</span>
+    <span class="p">])</span>
+
+    <span class="c1"># Row 2</span>
+    <span class="n">add_row</span><span class="p">([</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Telescope Configuration&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">),</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Instrumentation&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">),</span>
+        <span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Remote Operation&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">)</span>
+    <span class="p">],</span> <span class="p">[</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Focus Position&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;telescope&#39;</span><span class="p">][</span><span class="s1">&#39;focus_position&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Air Mass&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;telescope&#39;</span><span class="p">][</span><span class="s1">&#39;air_mass&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Tracking Mode&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;telescope&#39;</span><span class="p">][</span><span class="s1">&#39;tracking_mode&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Guiding Status&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;telescope&#39;</span><span class="p">][</span><span class="s1">&#39;guiding_status&#39;</span><span class="p">]],</span>
+        <span class="p">]),</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Instrument&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Observing Mode&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;observing_mode&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Calibration&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;calibration&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;filter_in_use&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Exposure Time&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;exposure_time&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Polarization Mode&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">][</span><span class="s1">&#39;polarization_mode&#39;</span><span class="p">]],</span>
+        <span class="p">]),</span>
+        <span class="n">make_table</span><span class="p">([</span>
+            <span class="p">[</span><span class="s2">&quot;Remote Access&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;remote&#39;</span><span class="p">][</span><span class="s1">&#39;remote_access&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Remote Observer&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;remote&#39;</span><span class="p">][</span><span class="s1">&#39;remote_observer&#39;</span><span class="p">]],</span>
+            <span class="p">[</span><span class="s2">&quot;Emergency Stop&quot;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;remote&#39;</span><span class="p">][</span><span class="s1">&#39;emergency_stop&#39;</span><span class="p">]],</span>
+        <span class="p">])</span>
+    <span class="p">])</span>
+
+    <span class="c1"># Row 3 - Comments only in center</span>
+    <span class="n">comment_text</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;comments&#39;</span><span class="p">][</span><span class="s1">&#39;comments&#39;</span><span class="p">]</span>
+    <span class="n">comment_para</span> <span class="o">=</span> <span class="n">Paragraph</span><span class="p">(</span><span class="n">comment_text</span><span class="p">,</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Normal&#39;</span><span class="p">])</span>
+    <span class="n">comment_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+    <span class="p">[[</span><span class="s2">&quot;Comments&quot;</span><span class="p">,</span> <span class="n">comment_para</span><span class="p">]],</span>
+    <span class="n">colWidths</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">cm</span><span class="p">,</span> <span class="mi">25</span> <span class="o">*</span> <span class="n">cm</span><span class="p">],</span>
+    <span class="n">style</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;VALIGN&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;TOP&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;FONTSIZE&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;GRID&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">colors</span><span class="o">.</span><span class="n">grey</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;BACKGROUND&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">colors</span><span class="o">.</span><span class="n">whitesmoke</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Paragraph</span><span class="p">(</span><span class="s2">&quot;Comments&quot;</span><span class="p">,</span> <span class="n">section_title</span><span class="p">))</span>
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">story</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">KeepTogether</span><span class="p">(</span><span class="n">comment_table</span><span class="p">))</span>
+    
+    <span class="n">doc</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">story</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Aditya Radadiya.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
