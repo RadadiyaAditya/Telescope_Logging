@@ -34,7 +34,7 @@ class LSTConsumer(AsyncWebsocketConsumer):
 
         while True:
         # Get current UTC and LST time (computed from system time)
-            lst_time = compute_lst(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")  # Get updated LST
+            lst_time = compute_lst()  # Get updated LST
             utc_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         
         # Send times as a JSON payload

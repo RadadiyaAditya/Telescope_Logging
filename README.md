@@ -171,6 +171,11 @@ flowchart TD
     click APIGateway "https://github.com/radadiyaaditya/telescope_logging/blob/main/README.md"
 ```
 
+## Documentation
+Access the whole documentation on index.html file at:
+```bash
+Telescope_Logging\docs\build\html\index.html
+```
 
 ## Prerequisites
 

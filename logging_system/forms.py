@@ -100,7 +100,7 @@ class ObservationForm(forms.ModelForm):
     ra_hour = forms.IntegerField(label="RA Hours", min_value=0, max_value=23, widget=forms.NumberInput(attrs={'placeholder': 'HH', 'class': 'form-control'}))
     ra_minute = forms.IntegerField(label="RA Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     ra_second = forms.DecimalField(label="RA Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
- 
+
     dec_degree = forms.IntegerField(label="Dec Degrees", min_value=-90, max_value=90, widget=forms.NumberInput(attrs={'placeholder': 'DD', 'class': 'form-control'}))
     dec_minute = forms.IntegerField(label="Dec Minutes", min_value=0, max_value=59, widget=forms.NumberInput(attrs={'placeholder': 'MM', 'class': 'form-control'}))
     dec_second = forms.DecimalField(label="Dec Seconds", min_value=0, max_value=59.999, decimal_places=2, widget=forms.NumberInput(attrs={'placeholder': 'SS.ss', 'class': 'form-control'}))
