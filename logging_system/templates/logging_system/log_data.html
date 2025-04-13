@@ -28,49 +28,108 @@
             class="form-control mb-2" />
     </div>
 
-
     <button type="submit" class="btn btn-primary mt-2">Search</button>
 </form>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Session ID</th>
-            <th>Telescope</th>
-            <th>Operator</th>
-            <th>Observer</th>
-            <th>Log Start Time(UTC)</th>
-            <th>Log Date</th>
-            <th>Instrument</th>
-            <th>Exposure Time</th>
-            <th>Target Object</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+<form id="multiActionForm" method="post" action="{% url 'download_multi_pdf' %}">
+    {% csrf_token %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="selectAll"></th>
+                <th>Session ID</th>
+                <th>Telescope</th>
+                <th>Operator</th>
+                <th>Observer</th>
+                <th>Log Start Time(UTC)</th>
+                <th>Log Date</th>
+                <th>Instrument</th>
+                <th>Exposure Time</th>
+                <th>Target Object</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td><input type="checkbox" name="session_ids" value="{{ log.session_id }}"></td>
+                <td>{{ log.session_id }}</td>
+                <td>{{ log.telescope_name }}</td>
+                <td>{{ log.telescope_operator }}</td>
+                <td>{{ log.observer_name }}</td>
+                <td>{{ log.log_start_time_utc|time:"h:i:s A" }}</td>
+                <td>{{ log.log_start_time_utc|date:"D, d M Y" }}</td>
+                <td>{{ log.instrumentation.instrument_name }}</td>
+                <td>{{ log.instrumentation.exposure_time }}</td>
+                <td>{{ log.observation.target_name }}</td>
+                <td>
+                    <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11">No logs available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <tbody>
-        {% for log in logs %}
-        <tr>
-            <td>{{ log.session_id }}</td>
-            <td>{{ log.telescope_name }}</td>
-            <td>{{ log.telescope_operator }}</td>
-            <td>{{ log.observer_name }}</td>
-            <td>{{ log.log_start_time_utc|time:"h:i:s A" }}</td>
-            <td>{{ log.log_start_time_utc|date:"D, d M Y" }}</td>
-            <td>{{ log.instrumentation.instrument_name }}</td>
-            <td>{{ log.instrumentation.exposure_time }}</td>
-            <td>{{ log.observation.target_name }}</td>
-            <td>
-                <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">No logs available.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Download Selected as One PDF</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
+            Send Combined PDF via Email
+        </button>
+    </div>
+</form>
 
+<!-- SMTP Modal Popup -->
+<div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'send_email' %}" id="emailForm">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="smtpModalLabel">SMTP Email Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="smtp_user" class="form-label">Your Mail Username</label>
+                        <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_password" class="form-label">Email Password</label>
+                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" required>
+                    </div>
+                    {{ email_form.recipient_email.label_tag }}
+                    {{ email_form.recipient_email }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Send Email</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Toggle all checkboxes
+    document.getElementById('selectAll').addEventListener('click', function () {
+        const checkboxes = document.querySelectorAll('input[name="session_ids"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    // Transfer selected checkboxes to email form on modal submit
+    document.getElementById('emailForm').addEventListener('submit', function (e) {
+        const selected = document.querySelectorAll('input[name="session_ids"]:checked');
+        selected.forEach(cb => {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'session_ids';
+            hidden.value = cb.value;
+            this.appendChild(hidden);
+        });
+    });
+</script>
 
 {% endblock %}

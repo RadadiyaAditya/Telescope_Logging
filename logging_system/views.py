@@ -29,8 +29,16 @@ from dotenv import load_dotenv
 #required for downloading pdf
 from django.http import FileResponse, HttpResponse
 import tempfile
-from .report_utils import generate_pdf_reportlab
-import tempfile
+from .report_utils import generate_pdf_reportlab, build_report_story
+from django.views.decorators.http import require_POST
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, PageBreak
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+
+
+import csv
 
 #required for sending email
 from django.core.mail import EmailMessage
@@ -134,82 +142,16 @@ def telescope_log_view(request):
             comment_instance.general_info = general_instance
             comment_instance.save()
 
+            # create or append log data to .csv file
+            append_log_to_csv(general_instance)
+
             if 'download_pdf' in request.POST:
                 # Directly return the generated PDF file response.
                 messages.success(request, 'Log Downloaded & Saved Successfully')
                 return generate_pdf(request, general_instance.session_id)
             
             if 'send_email' in request.POST:
-                recipient_list = [
-                    "adityaradadiya294@gmail.com",
-                    "adityaradadiya296@gmail.com",
-                    request.user.email
-                ]
-
-                # Generate PDF for the saved log data
-                pdf_path = create_pdf_file(general_instance.session_id)
-                if not pdf_path:
-                    messages.error(request, "Failed to generate PDF. Email not sent.")
-                    return redirect('telescope_log')
-
-                # Build the email body (similar to your session_detail email)
-                email_body_html = f"""
-                <html>
-                <head></head>
-                <body>
-                    <p>Dear User,</p>
-                    <p>Please find attached the telescope log report for session {general_instance.session_id}.</p>
-                    <h3>Session Details:</h3>
-                    <ul>
-                        <li><strong>Session ID:</strong> {general_instance.session_id}</li>
-                        <li><strong>Telescope:</strong> {general_instance.telescope_name}</li>
-                        <li><strong>Operator:</strong> {general_instance.telescope_operator}</li>
-                        <li><strong>Observer:</strong> {general_instance.observer_name}</li>
-                        <li><strong>Log Start Time (UTC):</strong> {general_instance.log_start_time_utc.strftime('%Y-%m-%d %H:%M:%S')}</li>
-                        <li><strong>Log Date:</strong> {general_instance.log_start_time_utc.strftime('%d %B %Y')}</li>
-                        <li><strong>Instrument:</strong> {getattr(general_instance.instrumentation, 'instrument_name', 'N/A')}</li>
-                        <li><strong>Exposure Time:</strong> {getattr(general_instance.instrumentation, 'exposure_time', 'N/A')} seconds</li>
-                        <li><strong>Target Object:</strong> {getattr(general_instance.observation, 'target_name', 'N/A')}</li>
-                    </ul>
-                    <p>Best regards,<br>Telescope Logging System</p>
-                </body>
-                </html>
-                """
-
-                # Attempt to send the email
-                try:
-                    email_form = EmailForm(request.POST)
-                    if email_form.is_valid():
-                        additional_email = email_form.cleaned_data.get("recipient_email")
-                        if additional_email:
-                            email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
-                            for email in email_list:
-                                try:
-                                    validate_email(email)
-                                except ValidationError:
-                                    messages.error(request, f"Invalid email address: {email}")
-                                    return redirect('telescope_log')
-                            recipient_list.extend(email_list)
-                    else:
-                        messages.error(request, "Invalid email input.")
-                        return redirect('telescope_log')
-            
-                    email = EmailMessage(
-                        subject=f"{general_instance.telescope_name} Log - {general_instance.log_start_time_utc.strftime('%d %B %Y')}",
-                        body=email_body_html,
-                        from_email=os.getenv("EMAIL_HOST_USER"),
-                        to=recipient_list
-                        )
-                    email.content_subtype = "html"
-                    email.attach_file(pdf_path)
-                    email.send()
-
-                    messages.success(request, f"Log Saved & Email sent successfully to {', '.join(recipient_list)}.")
-                    return redirect('telescope_log')
-                except Exception as e:
-                    messages.error(request, f"Failed to send email: {str(e)}")
-
-                return redirect('telescope_log')
+                return redirect('send_email', session_id=general_instance.session_id)
 
             messages.success(request, 'Log Saved Successfully')
             return redirect('telescope_log')
@@ -316,18 +258,18 @@ def generate_pdf(request, session_id):
     Returns:
         FileResponse: A response with the PDF file attached.
     """
-
+    general = get_object_or_404(GeneralInfo, session_id=session_id)
     pdf_path = create_pdf_file(session_id)
     if not pdf_path or not os.path.exists(pdf_path):
         return HttpResponse("Error generating PDF.", status=500)
 
     pdf_file = open(pdf_path, 'rb')
     response = FileResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Log_{session_id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="Log-{general.telescope_name}-{general.log_start_time_utc.strftime('%Y-%m-%d')}.pdf"'
     return response
 
 # Send email with PDF attachment 
-def send_email(request, session_id):
+def send_email(request, session_id=None):
     """
     Send an email with a PDF log attachment to predefined and user-provided recipients.
 
@@ -339,11 +281,61 @@ def send_email(request, session_id):
         HttpResponseRedirect: Redirect to the session detail page with success or error messages.
     """
 
+    # Check if this is a multi-session email request
+
+    session_ids = request.POST.getlist("session_ids")
+    if session_ids:
+        general = None  # no single session context
+        
+        session_list = ", ".join(session_ids)
+        log_reference = f"Log-{session_list}"
+        #Build email body (based on first session if multiple)
+        first_session = get_object_or_404(GeneralInfo, session_id=session_ids[0])
+        subject = f"{first_session.telescope_name} Log Report - {first_session.log_start_time_utc.strftime('%d %B %Y')}"
+        email_body = f"""
+        <html><body>
+        <p>Dear User,</p>
+        <p>Please find attached the telescope log report for the selected sessions - {log_reference}.</p>
+        <p>Best regards,<br>Telescope Logging System</p>
+        </body></html>
+        """
+    else:
+        # Fallback: treat it as a single session email
+        session_ids = [session_id]
+        general = get_object_or_404(GeneralInfo, session_id=session_id)
+
+        # Create the email body
+        subject = f"{general.telescope_name} Log - {general.log_start_time_utc.strftime('%d %B %Y')}"
+        email_body = f"""
+        <html>
+        <head></head>
+        <body>
+            <p>Dear User,</p>
+            <p>Please find attached the telescope log report for the log session {general.telescope_name}-{general.log_start_time_utc.strftime('%Y-%m-%d')}.</p>
+            <h3>Session Details:</h3>
+            <ul>
+                <li><strong>Session ID:</strong> {general.session_id}</li>
+                <li><strong>Telescope:</strong> {general.telescope_name}</li>
+                <li><strong>Operator:</strong> {general.telescope_operator}</li>
+                <li><strong>Observer:</strong> {general.observer_name}</li>
+                <li><strong>Log Start Time (UTC):</strong> {general.log_start_time_utc.strftime('%Y-%m-%d %H:%M:%S')}</li>
+                <li><strong>Log Date:</strong> {general.log_start_time_utc.strftime('%d %B %Y')}</li>
+                <li><strong>Instrument:</strong> {getattr(general.instrumentation, 'instrument_name', 'N/A')}</li>
+                <li><strong>Exposure Time:</strong> {getattr(general.instrumentation, 'exposure_time', 'N/A')} seconds</li>
+                <li><strong>Target Object:</strong> {getattr(general.observation, 'target_name', 'N/A')}</li>
+                <li><strong>Airmass:</strong> {getattr(general.telescope_configuration, 'air_mass', 'N/A')}</li>
+                <li><strong>Seeing:</strong> {getattr(general.environmental_condition, 'seeing', 'N/A')}</li>
+            </ul>
+            <p>Best regards,<br>Telescope Logging System</p>
+        </body>
+        </html>
+        """
+
 
     # predifined recipient list (Admin & miro)
-    general = get_object_or_404(GeneralInfo, session_id=session_id)
+
     recipient_list = [
-        "arvindr@prl.res.in",
+        "adityaradadiya294@gmail.com",
         "adityaradadiya296@gmail.com",
         request.user.email
     ]
@@ -363,43 +355,28 @@ def send_email(request, session_id):
                         validate_email(email)
                     except ValidationError:
                         messages.error(request, f"Invalid email address: {email}")
-                        return redirect("session_detail", session_id=session_id)
+                        return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
                 
                 
                 recipient_list.extend(email_list)
 
     
-    # Generate PDF for the email attachment
-    pdf_path = create_pdf_file(session_id)
-    if not pdf_path or not os.path.exists(pdf_path):
-        messages.error(request, "Failed to generate PDF. Email not sent.")
-        return redirect("session_detail", session_id=session_id)
+    # Generate PDF (combined if multiple sessions)
+    story = []
+    for sid in session_ids:
+        instance = get_object_or_404(GeneralInfo, session_id=sid)
+        session_data = prepare_session_data(instance)
+        build_report_story(session_data, story)
 
+    pdf_buffer = io.BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=landscape(A4),
+                            rightMargin=1*cm, leftMargin=1*cm,
+                            topMargin=1*cm, bottomMargin=1*cm)
+    doc.build(story)
+    pdf_buffer.seek(0)
 
-    # Create the email body
-    subject = f"{general.telescope_name} Log - {general.log_start_time_utc.strftime('%d %B %Y')}"
-    email_body = f"""
-    <html>
-    <head></head>
-    <body>
-        <p>Dear User,</p>
-        <p>Please find attached the telescope log report for your session {general.session_id}.</p>
-        <h3>Session Details:</h3>
-        <ul>
-            <li><strong>Session ID:</strong> {general.session_id}</li>
-            <li><strong>Telescope:</strong> {general.telescope_name}</li>
-            <li><strong>Operator:</strong> {general.telescope_operator}</li>
-            <li><strong>Observer:</strong> {general.observer_name}</li>
-            <li><strong>Log Start Time (UTC):</strong> {general.log_start_time_utc.strftime('%Y-%m-%d %H:%M:%S')}</li>
-            <li><strong>Log Date:</strong> {general.log_start_time_utc.strftime('%d %B %Y')}</li>
-            <li><strong>Instrument:</strong> {getattr(general.instrumentation, 'instrument_name', 'N/A')}</li>
-            <li><strong>Exposure Time:</strong> {getattr(general.instrumentation, 'exposure_time', 'N/A')} seconds</li>
-            <li><strong>Target Object:</strong> {getattr(general.observation, 'target_name', 'N/A')}</li>
-        </ul>
-        <p>Best regards,<br>Telescope Logging System</p>
-    </body>
-    </html>
-    """
+    
+    
 
 
 
@@ -418,24 +395,31 @@ def send_email(request, session_id):
             msg["Subject"] = subject
             msg.attach(MIMEText(email_body, "html"))
 
-            with open(pdf_path, "rb") as f:
-                part = MIMEApplication(f.read(), _subtype="pdf")
-                part.add_header("Content-Disposition", "attachment", filename=f"Log_{session_id}.pdf")
-                msg.attach(part)
 
-            with smtplib.SMTP(os.get_env("SMTP_DOMAIN"), os.get_env("SMTP_PORT")) as server:  # Update your domain and port 'start tls'
+            part = MIMEApplication(pdf_buffer.read(), _subtype="pdf")
+            if general:
+                filename = f"Log-{general.telescope_name}-{general.log_start_time_utc.strftime('%Y-%m-%d')}.pdf"
+            else:
+                filename = f"Combined_Logs_{session_ids[0]}_to_{session_ids[-1]}.pdf"    
+            part.add_header("Content-Disposition", "attachment", filename=filename)
+            msg.attach(part)
+
+            with smtplib.SMTP(os.getenv("SMTP_DOMAIN"), os.getenv("SMTP_PORT")) as server:  # Update your domain and port 'start tls'
                 server.starttls()
                 server.login(smtp_user, smtp_password)
                 server.send_message(msg)
 
             messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
-            return redirect("session_detail", session_id=session_id)
+            return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
 
         except Exception as e:
             messages.error(request, f"Failed to send email: {str(e)}")
-            return redirect("session_detail", session_id=session_id)
+            return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
 
-    return redirect("session_detail", session_id=session_id)
+    if session_id:
+        return redirect("session_detail", session_id=session_id)
+    else:
+        return redirect("log_data")
 
 # Fetch weather data from API
 def fetch_weather_data(request):
@@ -579,6 +563,87 @@ def session_detail_view(request, session_id):
     }
     return render(request, 'logging_system/session_detail.html', context)
 
+# Prepare session data for PDF generation
+def prepare_session_data(general_instance):
+    return {
+        "session_id": general_instance.session_id,
+        "general": {
+            "telescope_name": general_instance.telescope_name,
+            "telescope_operator": general_instance.telescope_operator,
+            "observer_name": general_instance.observer_name,
+            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M %p"),
+            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M %p"),
+            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+        },
+        "weather": {
+            "temperature": getattr(general_instance.environmental_condition, "temperature", ""),
+            "humidity": getattr(general_instance.environmental_condition, "humidity", ""),
+            "wind_speed": getattr(general_instance.environmental_condition, "wind_speed", ""),
+            "seeing": getattr(general_instance.environmental_condition, "seeing", ""),
+            "cloud_coverage": getattr(general_instance.environmental_condition, "cloud_coverage", ""),
+            "moon_phase": getattr(general_instance.environmental_condition, "moon_phase", ""),
+        },
+        "observation": {
+            "target_name": getattr(general_instance.observation, "target_name", ""),
+            "right_ascension": getattr(general_instance.observation, "right_ascension", ""),
+            "declination": getattr(general_instance.observation, "declination", ""),
+            "magnitude": getattr(general_instance.observation, "magnitude", ""),
+        },
+        "telescope": {
+            "focus_position": getattr(general_instance.telescope_configuration, "focus_position", ""),
+            "air_mass": getattr(general_instance.telescope_configuration, "air_mass", ""),
+            "tracking_mode": getattr(general_instance.telescope_configuration, "tracking_mode", ""),
+            "guiding_status": getattr(general_instance.telescope_configuration, "guiding_status", ""),
+        },
+        "instrument": {
+            "instrument_name": getattr(general_instance.instrumentation, "instrument_name", ""),
+            "observing_mode": getattr(general_instance.instrumentation, "observing_mode", ""),
+            "calibration": getattr(general_instance.instrumentation, "calibration", ""),
+            "filter_in_use": getattr(general_instance.instrumentation, "filter_in_use", ""),
+            "exposure_time": getattr(general_instance.instrumentation, "exposure_time", ""),
+            "polarization_mode": getattr(general_instance.instrumentation, "polarization_mode", ""),
+        },
+        "remote": {
+            "remote_access": getattr(general_instance.remote_operation, "remote_access", ""),
+            "remote_observer": getattr(general_instance.remote_operation, "remote_observer", ""),
+            "emergency_stop": getattr(general_instance.remote_operation, "emergency_stop", ""),
+        },
+        "comments": {
+            "comments": getattr(general_instance.comments, "comments", ""),
+        }
+    }
+
+# Multiple-pdf download
+@require_POST
+def download_multi_pdf(request):
+    session_ids = request.POST.getlist('session_ids')
+    if not session_ids:
+        messages.error(request, "Please select at least one session to download.")
+        return redirect('log_data')
+
+    story = []
+    for session_id in session_ids:
+        general = get_object_or_404(GeneralInfo, session_id=session_id)
+        session_data = prepare_session_data(general)
+        build_report_story(session_data, story)  # Append per session
+
+    temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    doc = SimpleDocTemplate(temp_pdf.name, pagesize=landscape(A4),
+                            rightMargin=1*cm, leftMargin=1*cm,
+                            topMargin=1*cm, bottomMargin=1*cm)
+    doc.build(story)
+
+    filename = f"Logs_Session_{session_ids[0]}_to_{session_ids[-1]}.pdf"
+
+    return FileResponse(
+        open(temp_pdf.name, "rb"),
+        as_attachment=True,
+        filename=filename,
+        content_type="application/pdf"
+    )
+
+
 #fits page view
 @login_required
 def fits_view(request):
@@ -646,3 +711,80 @@ def fits_view(request):
         "form": form,
         "logs": logs,
     })
+
+# Append log data to CSV file
+def append_log_to_csv(general_info):
+    """
+    Appends a single observation session to the logs.csv file.
+    """
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    csv_file_path = os.path.join(BASE_DIR, "csv logs", "telescope_logs.csv")  # Adjust path as needed
+    os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
+
+    # Preparing the data row
+    row = [
+        general_info.session_id,
+        general_info.telescope_name,
+        general_info.telescope_operator,
+        general_info.observer_name.username,
+        general_info.log_start_time_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        general_info.log_start_time_lst.strftime("%Y-%m-%d %H:%M:%S"),
+        general_info.log_end_time_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        general_info.log_end_time_lst.strftime("%Y-%m-%d %H:%M:%S"),
+
+
+        getattr(general_info.observation, "target_name", ""),
+        getattr(general_info.observation, "right_ascension", ""),
+        getattr(general_info.observation, "declination", ""),
+        getattr(general_info.observation, "magnitude", ""),
+
+
+        getattr(general_info.instrumentation, "instrument_name", ""),
+        getattr(general_info.instrumentation, "observing_mode", ""),
+        getattr(general_info.instrumentation, "exposure_time", ""),
+        getattr(general_info.instrumentation, "calibration", ""),
+        getattr(general_info.instrumentation, "filter_in_use", ""),
+        getattr(general_info.instrumentation, "polarization_mode", ""),
+
+
+        getattr(general_info.environmental_condition, "temperature", ""),
+        getattr(general_info.environmental_condition, "humidity", ""),
+        getattr(general_info.environmental_condition, "wind_speed", ""),
+        getattr(general_info.environmental_condition, "seeing", ""),
+        getattr(general_info.environmental_condition, "cloud_coverage", ""),
+        getattr(general_info.environmental_condition, "moon_phase", ""),
+
+
+        getattr(general_info.telescope_configuration, "air_mass", ""),
+        getattr(general_info.telescope_configuration, "focus_position", ""),
+        getattr(general_info.telescope_configuration, "tracking_mode", ""),
+        getattr(general_info.telescope_configuration, "guiding_status", ""),
+        getattr(general_info.telescope_configuration, "emergency_stop", ""),
+
+
+        getattr(general_info.remote_operation, "remote_access", ""),
+        getattr(general_info.remote_operation, "remote_observer", ""),
+
+        getattr(general_info.comments, "comments", ""),
+    ]
+
+    
+    headers = [
+        "Session ID", "Telescope Name", "Operator", "Observer Name",
+        "Log Start Time (UTC)", "Log Start Time (LST)", "Log End Time (UTC)", "Log End Time (LST)",
+        "Target Name", "Right Ascension", "Declination", "Magnitude",
+        "Instrument Name", "Observing Mode", "Exposure Time", "Calibration",
+        "Filter In Use", "Polarization Mode", "Temprature", "Humidity",
+        "Wind Speed", "Seeing", "Cloud Coverage", "Moon Phase",
+        "Air Mass", "Focus Position", "Tracking Mode", "Guiding Status",
+        "Emergency Stop", "Remote Access", "Remote Observer", "Comments"
+    ]
+
+    # Write to CSV
+    write_header = not os.path.exists(csv_file_path)
+    with open(csv_file_path, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        if write_header:
+            writer.writerow(headers)
+        writer.writerow(row)

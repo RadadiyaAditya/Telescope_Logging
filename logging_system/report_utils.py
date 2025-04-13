@@ -1,10 +1,10 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, PageBreak
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
-def generate_pdf_reportlab(session_data, filepath):
+def build_report_story(session_data, story):
 
     """
     Generates a PDF report of a telescope log session using ReportLab.
@@ -21,30 +21,16 @@ def generate_pdf_reportlab(session_data, filepath):
     Returns:
         None: Writes output directly to the given `filepath`.
     """
-
-    doc = SimpleDocTemplate(filepath, pagesize=landscape(A4), rightMargin=1*cm, leftMargin=1*cm, topMargin=1*cm, bottomMargin=1*cm)
+    # Create a PDF document with landscape orientation
     styles = getSampleStyleSheet()
-    story = [] # This list will contain all flowable PDF elements (Paragraphs, Tables, etc.)
-
-    # ─────────────────────────────────────────────
-    # Title Section
-    # ─────────────────────────────────────────────
-
-    # Title
     title_style = styles['Title']
     title_style.fontSize = 16
-    story.append(Paragraph(f"Session Details: {session_data['session_id']}", title_style))
-    story.append(Spacer(1, 12))
 
 
-    # Custom style for section headers
-    # Section header style
     section_title = ParagraphStyle(
         'SectionHeader', fontSize=10, leading=12, alignment=1,
-        spaceAfter=6, spaceBefore=6, fontName='Helvetica-Bold', textTransform='uppercase'
-    )
-
-    # Table styling used across the report
+        spaceAfter=6, spaceBefore=6, fontName='Helvetica-Bold', textTransform='uppercase')
+    
 
     table_style = TableStyle([
         ('BACKGROUND', (0,0), (0,-1), colors.whitesmoke),
@@ -56,6 +42,7 @@ def generate_pdf_reportlab(session_data, filepath):
         ('TOPPADDING', (0,0), (-1,-1), 3),
         ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
     ])
+
 
 
     # Helper function to generate a uniform table with custom widths
@@ -156,4 +143,13 @@ def generate_pdf_reportlab(session_data, filepath):
     story.append(Spacer(1, 6))
     story.append(KeepTogether(comment_table))
     
+    story.append(PageBreak())
+
+
+def generate_pdf_reportlab(session_data, filepath):
+    story = []
+    build_report_story(session_data, story)
+    doc = SimpleDocTemplate(filepath, pagesize=landscape(A4),
+                            rightMargin=1*cm, leftMargin=1*cm,
+                            topMargin=1*cm, bottomMargin=1*cm)
     doc.build(story)
