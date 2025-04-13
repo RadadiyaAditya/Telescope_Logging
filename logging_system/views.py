@@ -343,7 +343,7 @@ def send_email(request, session_id):
     # predifined recipient list (Admin & miro)
     general = get_object_or_404(GeneralInfo, session_id=session_id)
     recipient_list = [
-        "adityaradadiya294@gmail.com",
+        "arvindr@prl.res.in",
         "adityaradadiya296@gmail.com",
         request.user.email
     ]
@@ -406,13 +406,14 @@ def send_email(request, session_id):
     # get sender's email and password
     if request.method == "POST":
         smtp_user = request.POST.get("smtp_user")
+        smtp_email = request.user.email
         smtp_password = request.POST.get("smtp_password")
 
 
     # send email from the sender's email to the recipient list
         try:
             msg = MIMEMultipart()
-            msg["From"] = smtp_user
+            msg["From"] = smtp_email
             msg["To"] = ", ".join(recipient_list)
             msg["Subject"] = subject
             msg.attach(MIMEText(email_body, "html"))
@@ -422,7 +423,7 @@ def send_email(request, session_id):
                 part.add_header("Content-Disposition", "attachment", filename=f"Log_{session_id}.pdf")
                 msg.attach(part)
 
-            with smtplib.SMTP("172.16.0.5", 25) as server:  # Update your domain and port 'start tls'
+            with smtplib.SMTP(os.get_env("SMTP_DOMAIN"), os.get_env("SMTP_PORT")) as server:  # Update your domain and port 'start tls'
                 server.starttls()
                 server.login(smtp_user, smtp_password)
                 server.send_message(msg)
