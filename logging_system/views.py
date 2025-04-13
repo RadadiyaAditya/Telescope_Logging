@@ -422,7 +422,7 @@ def send_email(request, session_id):
                 part.add_header("Content-Disposition", "attachment", filename=f"Log_{session_id}.pdf")
                 msg.attach(part)
 
-            with smtplib.SMTP("smtp.yourdomain.com", 587) as server:  # Update your domain and port
+            with smtplib.SMTP(os.get_env("DOMAIN"), os.get_env("PORT")) as server:  # Update your domain and port
                 server.starttls()
                 server.login(smtp_email, smtp_password)
                 server.send_message(msg)
