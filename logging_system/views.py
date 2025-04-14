@@ -58,6 +58,10 @@ load_dotenv()
 
 # Create your views here.
 
+# Homepage view
+def homepage(request):
+    return render(request, 'logging_system/homepage.html')
+
 # Main form view
 @login_required
 def telescope_log_view(request):
@@ -464,7 +468,7 @@ def log_data_view(request):
 
     Filters supported:
     - session_id
-    - operator_name
+    - observer_name
     - instrument_name
     - target_name
     - date
@@ -474,7 +478,7 @@ def log_data_view(request):
     """
 
     session_id = request.GET.get('session_id', '')
-    operator_name = request.GET.get('operator_name', '')
+    observer_name = request.GET.get('observer_name', '')
     instrument_name = request.GET.get('instrument_name', '')
     target_name = request.GET.get('target_name', '')
     date_filter = request.GET.get('date', '')
@@ -498,8 +502,8 @@ def log_data_view(request):
     if session_id:
         filters &= Q(session_id__icontains=session_id)
     
-    if operator_name:
-        filters &= Q(operator_name__icontains=operator_name)
+    if observer_name:
+        filters &= Q(observer_name__username__icontains=observer_name)
 
     if instrument_name:
         filters &= Q(instrumentation__instrument_name__icontains=instrument_name)
@@ -515,7 +519,7 @@ def log_data_view(request):
     context = {
         'logs': logs,
         'session_id': session_id,
-        'operator_name': operator_name,
+        'observer_name': observer_name,
         'instrument_name': instrument_name,
         'target_name': target_name,
         'date_filter': date_filter,

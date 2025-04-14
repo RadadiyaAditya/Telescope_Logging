@@ -1,44 +1,143 @@
 {% extends 'logging_system/base.html' %}
 
 {% block content %}
-<h2>Upload FITS File & Inject Log Data</h2>
+{% block styles %}
+{{ block.super }}
+<style>
+    /* Inherit card styles from log_data */
+    .log-card {
+        display: grid;
+        grid-template-columns: 0.3fr 0.5fr 1.5fr 1.5fr 2fr 1.5fr 1fr 1fr 1.5fr;
+        gap: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #fff;
+        align-items: center;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
 
-<form method="post" enctype="multipart/form-data" class="mb-4">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <hr>
-    <h4>Select a Log Entry:</h4>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Select</th>
-                <th>Session ID</th>
-                <th>Telescope</th>
-                <th>Observer</th>
-                <th>Operator</th>
-                <th>Instrument</th>
-                <th>Exposure Time</th>
-                <th>Target</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td><input type="radio" name="selected_log" value="{{ log.session_id }}"></td>
-                <td>{{ log.session_id }}</td>
-                <td>{{ log.telescope_name }}</td>
-                <td>{{ log.observer_name }}</td>
-                <td>{{ log.telescope_operator }}</td>
-                <td>{{ log.instrumentation.instrument_name }}</td>
-                <td>{{ log.instrumentation.exposure_time }}</td>
-                <td>{{ log.observation.target_name }}</td>
-                <td>{{ log.log_start_time_utc|date:"Y-m-d H:i" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    .log-card::-webkit-scrollbar {
+        height: 6px;
+    }
 
-    <button type="submit" class="btn btn-primary">Inject Data & Download</button>
-</form>
+    .log-card::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+    }
+
+    .log-col {
+        font-size: 0.9rem;
+        min-width: 60px;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log-col strong {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #9efeff;
+        margin-bottom: 2px;
+    }
+
+    input[type="file"] {
+        background-color: transparent;
+        color: #fff;
+        padding: 0.5rem;
+        border: 1px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s ease-in-out;
+    }
+
+    input[type="file"]::file-selector-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    h1 {
+        color: #ffffff;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        margin-top: 5.5rem;
+    }
+</style>
+{% endblock %}
+
+<div>
+    <h1 class="text-center mb-4">Fits Injection</h2>
+        <div class="container py-4 section-card">
+
+            <form method="post" enctype="multipart/form-data" class="mb-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <h4 class="text-white mt-5 mb-3">Select a Log Entry:</h4>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% for log in logs %}
+                    <div class="log-card">
+                        <div class="log-col">
+                            <strong>Select</strong>
+                            <input type="radio" name="selected_log" value="{{ log.session_id }}">
+                        </div>
+                        <div class="log-col">
+                            <strong>S-ID</strong>
+                            {{ log.session_id }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Telescope</strong>
+                            {{ log.telescope_name }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Observer</strong>
+                            {{ log.observer_name }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Operator</strong>
+                            {{ log.telescope_operator }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Instrument</strong>
+                            {{ log.instrumentation.instrument_name }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Exposure</strong>
+                            {{ log.instrumentation.exposure_time }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Target</strong>
+                            {{ log.observation.target_name }}
+                        </div>
+                        <div class="log-col">
+                            <strong>Date</strong>
+                            {{ log.log_start_time_utc|date:"Y-m-d H:i" }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-warning">No logs available.</div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Inject Data & Download</button>
+                </div>
+            </form>
+        </div>
+</div>
+
 {% endblock %}

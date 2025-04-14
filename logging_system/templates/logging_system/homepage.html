@@ -1,0 +1,80 @@
+{% extends 'logging_system/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        /* disables scrollbar */
+    }
+
+    .hero-section {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 2rem;
+        color: #ffffff;
+        text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .hero-section p {
+        font-size: 1.2rem;
+        color: #d8d8f8;
+        margin-bottom: 2rem;
+    }
+
+    .btn-start {
+        padding: 0.8rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: #9efeff;
+        color: #000;
+        border: none;
+        border-radius: 50px;
+        transition: 0.3s ease-in-out;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        width: fit-content;
+    }
+
+    .btn-start:hover {
+        background: #72d7f4;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2.2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<div class="hero-section">
+    <h1>!! Log !!<br>The Beauty of<br>Celestial Bodies.</h1>
+    <p>Gaze the Stars, the Moon, and Planets through the eye of our telescope logging system. Begin your observation log
+        now.</p>
+    <div class="d-flex flex-wrap gap-3 align-items-center">
+        <a href="{% url 'telescope_log' %}" class="btn btn-start">Start Logging</a>
+
+        {% if not user.is_authenticated %}
+        <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Login</a>
+        <a href="{% url 'register' %}" class="btn btn-info btn-sm">Sign Up</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,87 +1,257 @@
 {% extends 'logging_system/base.html' %}
 
 {% block content %}
-<h2>All Log Sessions</h2>
 
-<form method="get" class="mb-3">
-    <!-- Basic query field -->
-    <input type="text" name="session_id" value="{{ session_id }}" placeholder="Search by Session ID"
-        class="form-control mb-2" />
+<style>
+    .section-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
 
-    <!-- Collapsible Advanced Search Section -->
-    <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
-        Advanced Search ▼
-    </button>
+    .form-control {
+        background: rgba(255, 255, 255, 0.534);
+        border-radius: 8px;
+        color: #000;
+    }
 
-    <!-- Advanced date filter field -->
-    <div id="advancedSearch" class="collapse">
-        <input type="text" name="operator_name" value="{{ operator_name }}" placeholder="Search by Operator Name"
-            class="form-control mb-2 mt-3" />
+    h1 {
+        color: #ffffff;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        margin-top: 5.5rem;
+    }
 
-        <input type="text" name="instrument_name" value="{{ instrument_name }}" placeholder="Search by Instrument Name"
-            class="form-control mb-2" />
+    .log-card {
+        display: grid;
+        grid-template-columns: 0.3fr 1.5fr 1.5fr 1.5fr 1.2fr 1.5fr 1fr 1fr 0.5fr 2fr;
+        gap: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #fff;
+        align-items: center;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
 
-        <input type="text" name="target_name" value="{{ target_name }}" placeholder="Search by Target Name"
-            class="form-control mb-2" />
+    /* Chrome, Safari, Edge */
+    .log-card::-webkit-scrollbar {
+        height: 6px;
+    }
 
-        <input type="date" name="date" value="{{ date_filter }}" placeholder="Filter by Log Start Date (UTC)"
-            class="form-control mb-2" />
+    .log-card::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .log-card::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+    }
+
+    .log-card::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .log-col {
+        font-size: 0.9rem;
+        min-width: 60px;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log-col.sid {
+        min-width: 30px;
+        max-width: 50px;
+    }
+
+    .log-col strong {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #9efeff;
+        margin-bottom: 2px;
+    }
+
+    .log-action {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        white-space: nowrap;
+
+    }
+
+
+    /* Hide native checkbox */
+    input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #9efeff;
+        border-radius: 4px;
+        background-color: transparent;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    /* Checked style */
+    input[type="checkbox"]:checked {
+        background-color: #08f;
+        border-color: #08f;
+    }
+
+    /* Checkmark indicator */
+    input[type="checkbox"]::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 5px;
+        width: 4px;
+        height: 9px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        opacity: 0;
+        transition: all 0.2s ease;
+    }
+
+    input[type="checkbox"]:checked::after {
+        opacity: 1;
+    }
+
+    .view-btn {
+        background: linear-gradient(to right, #00c6ff, #0072ff);
+        border: none;
+        border-radius: 6px;
+        padding: 6px 14px;
+        color: white;
+        font-weight: 500;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
+        transition: all 0.3s ease;
+    }
+
+    .view-btn:hover {
+        background: linear-gradient(to right, #00d9ff, #005eff);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35);
+    }
+</style>
+<div>
+    <h1 class="text-center mb-4">All Log Sessions</h1>
+    <div class="container py-4 section-card">
+
+
+        <form method="get" class="mb-3">
+            <!-- Basic query field -->
+            <input type="text" name="session_id" value="{{ session_id }}" placeholder="Search by Session ID"
+                class="form-control mb-2" />
+
+            <!-- Collapsible Advanced Search Section -->
+            <button class="btn btn-secondary mt-2" type="button" data-bs-toggle="collapse"
+                data-bs-target="#advancedSearch">
+                Advanced Search ▼
+            </button>
+
+            <!-- Advanced date filter field -->
+            <div id="advancedSearch" class="collapse">
+                <input type="text" name="observer_name" value="{{ observer_name }}"
+                    placeholder="Search by Observer Name" class="form-control mb-2 mt-3" />
+
+                <input type="text" name="instrument_name" value="{{ instrument_name }}"
+                    placeholder="Search by Instrument Name" class="form-control mb-2" />
+
+                <input type="text" name="target_name" value="{{ target_name }}" placeholder="Search by Target Name"
+                    class="form-control mb-2" />
+
+                <input type="date" name="date" value="{{ date_filter }}" placeholder="Filter by Log Start Date (UTC)"
+                    class="form-control mb-2" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-2">Search</button>
+        </form>
+
+        <form id="multiActionForm" method="post" action="{% url 'download_multi_pdf' %}">
+            {% csrf_token %}
+            <div class="d-flex flex-column gap-3 mt-4 mb-4">
+                {% for log in logs %}
+                <div class="log-card">
+                    <div class="log-col sid">
+                        <strong>S-ID</strong>
+                        {{ log.session_id }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Telescope</strong>
+                        {{ log.telescope_name }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Operator</strong>
+                        {{ log.telescope_operator }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Observer</strong>
+                        {{ log.observer_name }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Start (UTC)</strong>
+                        {{ log.log_start_time_utc|time:"h:i:s A" }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Date</strong>
+                        {{ log.log_start_time_utc|date:"D, d M Y" }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Instrument</strong>
+                        {{ log.instrumentation.instrument_name }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Exposure</strong>
+                        {{ log.instrumentation.exposure_time }}
+                    </div>
+                    <div class="log-col">
+                        <strong>Target</strong>
+                        {{ log.observation.target_name }}
+                    </div>
+
+                    <div class="log-col log-action">
+                        <input type="checkbox" name="session_ids" value="{{ log.session_id }}"
+                            title="Select this session">
+                        <a href="{% url 'session_detail' log.session_id %}" class="view-btn">View Details</a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-warning">No logs available.</div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Download Selected as One PDF</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
+                    Send Combined PDF via Email
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary mt-2">Search</button>
-</form>
-
-<form id="multiActionForm" method="post" action="{% url 'download_multi_pdf' %}">
-    {% csrf_token %}
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th><input type="checkbox" id="selectAll"></th>
-                <th>Session ID</th>
-                <th>Telescope</th>
-                <th>Operator</th>
-                <th>Observer</th>
-                <th>Log Start Time(UTC)</th>
-                <th>Log Date</th>
-                <th>Instrument</th>
-                <th>Exposure Time</th>
-                <th>Target Object</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td><input type="checkbox" name="session_ids" value="{{ log.session_id }}"></td>
-                <td>{{ log.session_id }}</td>
-                <td>{{ log.telescope_name }}</td>
-                <td>{{ log.telescope_operator }}</td>
-                <td>{{ log.observer_name }}</td>
-                <td>{{ log.log_start_time_utc|time:"h:i:s A" }}</td>
-                <td>{{ log.log_start_time_utc|date:"D, d M Y" }}</td>
-                <td>{{ log.instrumentation.instrument_name }}</td>
-                <td>{{ log.instrumentation.exposure_time }}</td>
-                <td>{{ log.observation.target_name }}</td>
-                <td>
-                    <a href="{% url 'session_detail' log.session_id %}" class="btn btn-primary btn-sm">View Details</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="11">No logs available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="text-center">
-        <button type="submit" class="btn btn-primary">Download Selected as One PDF</button>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
-            Send Combined PDF via Email
-        </button>
-    </div>
-</form>
-
+{% block modal %}
 <!-- SMTP Modal Popup -->
 <div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -89,7 +259,7 @@
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="smtpModalLabel">SMTP Email Login</h5>
+                    <h5 class="modal-title" id="smtpModalLabel">Email Login</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -111,6 +281,7 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
 <script>
     // Toggle all checkboxes

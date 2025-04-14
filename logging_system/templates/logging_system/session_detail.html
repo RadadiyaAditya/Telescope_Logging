@@ -19,12 +19,75 @@ Styling:
 {% extends 'logging_system/base.html' %}
 
 {% block content %}
-<h2 class="mb-4">Session Details: {{ general.session_id }}</h2>
+<style>
+    /* Card style for each section */
+    .session-section {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(70px);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
 
-<div class="container">
+    /* Header for each table group */
+    .session-section h4 {
+        color: #00ffff;
+        text-align: center;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Styled table */
+    .session-section table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #e8f6fa;
+    }
+
+    .session-section th,
+    .session-section td {
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        vertical-align: middle;
+    }
+
+    .session-section table th,
+    .session-section table td {
+        background: rgba(255, 255, 255, 0.05);
+        color: #e8f6fa;
+        font-size: 15px;
+        padding: 10px 14px;
+    }
+
+    .session-section table th {
+        color: #ffc400;
+        /* light blue for labels */
+        font-weight: 600;
+    }
+
+    .session-section table td {
+        color: #ffffff;
+        /* white text for values */
+    }
+
+    .session-section th {
+        font-weight: 600;
+        width: 50%;
+        color: #ffffff;
+        /* Pure white for visibility */
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+<h2 class="mb-4 mt-5" style="text-align: center">Session Details: {{ general.session_id }}</h2>
+
+<div class="container py-4 px-3" style="max-width: 1200px;">
     <!-- Row 1: General Information, Environmental Conditions, Observation Parameters -->
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             <h4>General Information</h4>
             <table class="table table-bordered table-striped">
                 <tbody>
@@ -60,7 +123,7 @@ Styling:
             </table>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             {% if environmental_condition %}
             <h4>Weather Parameters</h4>
             <table class="table table-bordered table-striped">
@@ -95,7 +158,7 @@ Styling:
             {% endif %}
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             {% if observation %}
             <h4>Observation Parameters</h4>
             <table class="table table-bordered table-striped">
@@ -124,7 +187,7 @@ Styling:
 
     <!-- Row 2: Telescope Configuration, Instrumentation, Remote Operation -->
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             {% if telescope_configuration %}
             <h4>Telescope Configuration</h4>
             <table class="table table-bordered table-striped">
@@ -154,7 +217,7 @@ Styling:
             {% endif %}
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             {% if instrumentation %}
             <h4>Instrumentation</h4>
             <table class="table table-bordered table-striped">
@@ -188,7 +251,7 @@ Styling:
             {% endif %}
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-4 session-section">
             {% if remote_operation %}
             <h4>Remote Operation</h4>
             <table class="table table-bordered table-striped">
@@ -210,7 +273,7 @@ Styling:
     <!-- Row 3: Comments (if available) -->
     {% if comments %}
     <div class="row mb-4">
-        <div class="col-md-4 offset-md-4">
+        <div class="col-md-4 offset-md-4 session-section">
             <h4>Comments</h4>
             <table class="table table-bordered table-striped">
                 <tbody>
@@ -235,10 +298,11 @@ Styling:
     <a href="{% url 'log_data' %}" class="btn btn-secondary mt-4">Back to Logs</a>
 </div>
 
-<!-- Popup for SMTP Email Login -->
+{% block modal %}
+<!-- SMTP Modal Popup -->
 <div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form method="post" action="{% url 'send_email' general.session_id %}">
+        <form method="post" action="{% url 'send_email' %}" id="emailForm">
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
@@ -264,4 +328,6 @@ Styling:
         </form>
     </div>
 </div>
+{% endblock %}
+
 {% endblock %}

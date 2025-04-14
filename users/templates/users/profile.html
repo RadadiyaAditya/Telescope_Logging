@@ -1,13 +1,65 @@
 {% extends "logging_system/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="content-section">
-    <div class="media">
-        <div class="media-body">
-            <h2 class="account-heading">{{ user.username }}</h2>
-            <p class="text-secondary">{{ user.email }}</p>
-            <p class="text-secondary">{{ user.role }}</p>
-        </div>
+
+<style>
+    .profile-wrapper {
+        max-width: 600px;
+        margin: 4rem auto;
+        background: rgba(0, 0, 0, 0.65);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        color: #e0e0f0;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: #9efeff;
+        color: #000;
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        box-shadow: 0 0 10px rgba(158, 254, 255, 0.5);
+    }
+
+    .profile-wrapper h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-wrapper p {
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+        color: #b0b0d0;
+    }
+
+    .form-text,
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: #d2d2e2 !important;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="profile-wrapper">
+    <!-- Avatar with first letter of username -->
+    <div class="profile-avatar">
+        {{ user.username|slice:":1"|upper }}
     </div>
+
+    <!-- User Info -->
+    <h2>{{ user.username }}</h2>
+    <p>Email: {{ user.email }}</p>
+    {% if user.role %}
+    <p>Role: {{ user.role }}</p>
+    {% endif %}
 </div>
-{% endblock content %}
+
+{% endblock %}

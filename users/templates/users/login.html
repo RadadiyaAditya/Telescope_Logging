@@ -1,21 +1,60 @@
 {% extends "logging_system/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="content-section">
+
+<style>
+    .auth-wrapper {
+        max-width: 480px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        color: #ffffff;
+    }
+
+    .auth-wrapper legend {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #9efeff;
+    }
+
+    .auth-wrapper .btn {
+        font-weight: 600;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+    }
+
+    .auth-wrapper a {
+        color: #9efeff;
+        text-decoration: none;
+    }
+
+    .auth-wrapper a:hover {
+        color: #72d7f4;
+    }
+
+    .form-text,
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: #d2d2e2 !important;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="auth-wrapper">
     <form method="POST">
         {% csrf_token %}
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4"> Login Page </legend>
+            <legend class="border-bottom mb-4">Login</legend>
             {{ form|crispy }}
         </fieldset>
         <div class="form-group">
-            <button class="btn btn-outline-info" type="submit"> Log In </button>
+            <button class="btn btn-info mt-3" type="submit">Log In</button>
         </div>
     </form>
-    <div class="border-top pt-3">
-        <small class="text-muted">Need An Account?
-            <a class="ml-2" href="{% url 'register' %}">Register</a>
-        </small>
+    <div class="border-top pt-3 mt-4">
+        <small class="text">Need an account? <a href="{% url 'register' %}">Register</a></small>
     </div>
 </div>
 {% endblock %}

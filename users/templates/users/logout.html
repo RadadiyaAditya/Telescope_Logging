@@ -1,9 +1,42 @@
 {% extends "logging_system/base.html" %}
 {% block content %}
-<h2>You have been logged out</h2>
-<div class="border-top pt-3">
-    <small class="text-muted">
-        <a href="{% url 'login' %}">Log In Again</a>
-    </small>
+<style>
+    .logout-wrapper {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: #fff;
+        text-align: center;
+    }
+
+    .logout-wrapper h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .logout-wrapper a {
+        font-weight: 500;
+        color: #9efeff;
+        text-decoration: underline;
+    }
+
+    .logout-wrapper a:hover {
+        color: #72d7f4;
+    }
+
+    .form-text,
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: #d2d2e2 !important;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="logout-wrapper">
+    <h2>You have been successfully logged out</h2>
+    <p><a href="{% url 'login' %}">Log in again</a></p>
 </div>
 {% endblock %}
