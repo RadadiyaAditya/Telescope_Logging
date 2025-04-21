@@ -58,10 +58,6 @@ load_dotenv()
 
 # Create your views here.
 
-# Homepage view
-def homepage(request):
-    return render(request, 'logging_system/homepage.html')
-
 # Main form view
 @login_required
 def telescope_log_view(request):
@@ -182,6 +178,18 @@ def telescope_log_view(request):
         'session_id': locals().get('general_instance', None) and general_instance.session_id if 'send_email' in request.POST else None,
     })
 
+# Fetch telescope data from JSON file
+def fetch_telescope_data(request):
+    """
+    Fetch the latest telescope serial data from JSON.
+    """
+    try:
+        with open("latest_serial_data.json", "r") as f:
+            data = json.load(f)
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({"error": "Failed to read telescope data: " + str(e)}, status=500)
+
 # Create PDF file from HTML template
 def create_pdf_file(session_id):
     """
@@ -274,16 +282,6 @@ def generate_pdf(request, session_id):
 
 # Send email with PDF attachment 
 def send_email(request, session_id=None):
-    """
-    Send an email with a PDF log attachment to predefined and user-provided recipients.
-
-    Args:
-        request (HttpRequest): The HTTP request containing sender credentials and extra emails.
-        session_id (int): Session ID used to fetch data and generate the PDF.
-
-    Returns:
-        HttpResponseRedirect: Redirect to the session detail page with success or error messages.
-    """
 
     # Check if this is a multi-session email request
 
@@ -378,10 +376,6 @@ def send_email(request, session_id=None):
                             topMargin=1*cm, bottomMargin=1*cm)
     doc.build(story)
     pdf_buffer.seek(0)
-
-    
-    
-
 
 
     # get sender's email and password
@@ -515,6 +509,7 @@ def log_data_view(request):
         filters &= Q(log_start_time_utc__date=date_filter)
 
     logs = logs.filter(filters)
+    email_form = EmailForm()
 
     context = {
         'logs': logs,
@@ -523,6 +518,7 @@ def log_data_view(request):
         'instrument_name': instrument_name,
         'target_name': target_name,
         'date_filter': date_filter,
+        'email_form': email_form, 
     }
 
     return render(request, 'logging_system/log_data.html', context)
@@ -651,16 +647,7 @@ def download_multi_pdf(request):
 #fits page view
 @login_required
 def fits_view(request):
-    """
-    Allow users to upload a FITS file and inject log metadata into its header.
 
-    - Lists existing logs for selection
-    - Updates the FITS header fields
-    - Returns a modified FITS file as a downloadable response
-
-    Returns:
-        HttpResponse: Downloaded FITS file or re-rendered form with messages.
-    """
     logs = (
         GeneralInfo.objects.all()
         .order_by('-log_start_time_utc')

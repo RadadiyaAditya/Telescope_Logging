@@ -57,3 +57,14 @@ class LSTConsumer(AsyncWebsocketConsumer):
             logger.error(f"Error in disconnect: {e}")
         finally:
             await super().disconnect(close_code)
+
+class SerialConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.channel_layer.group_add("serial_data", self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard("serial_data", self.channel_name)
+
+    async def serial_update(self, event):
+        await self.send(text_data=json.dumps(event["data"]))

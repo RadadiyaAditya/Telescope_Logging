@@ -119,6 +119,9 @@ JavaScript:
                         </div>
                     </div>
                     {{ observation_form.magnitude|as_crispy_field }}
+                    <div class="text-center">
+                        <button type="button" id="getTelescopeBtn" class="btn btn-info mb-3">Get Telescope Data</button>
+                    </div>
                 </div>
 
                 <!-- Weather Parameter -->
@@ -305,6 +308,35 @@ JavaScript:
 
 
 <script>
+
+    document.getElementById("getTelescopeBtn").addEventListener("click", function () {
+        fetch("/get-telescope-data/")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Telescope Data Received:", data);
+
+                if (data.ra && data.dec) {
+                    const [raH, raM, raS] = data.ra.split(" ");
+                    document.getElementById("id_ra_hour").value = raH;
+                    document.getElementById("id_ra_minute").value = raM;
+                    document.getElementById("id_ra_second").value = raS;
+
+                    const [decD, decM, decS] = data.dec.split(" ");
+                    document.getElementById("id_dec_degree").value = decD;
+                    document.getElementById("id_dec_minute").value = decM;
+                    document.getElementById("id_dec_second").value = decS;
+                }
+
+                if (data.lst) {
+                    document.getElementById("lst_time").value = data.lst;
+                }
+
+                if (data.utc) {
+                    document.getElementById("utc_time").value = data.utc;
+                }
+            })
+            .catch(error => console.error("Error fetching telescope data:", error));
+    });
 
     // WebSocket connection to receive real-time UTC and LST updates
 

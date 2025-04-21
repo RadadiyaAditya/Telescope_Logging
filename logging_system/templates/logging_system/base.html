@@ -17,7 +17,7 @@
             font-family: 'Sora', sans-serif;
             color: #e0e0f0;
             min-height: 100vh;
-            background: url('/static/logging_system/images/observatory-bg.png') no-repeat center center fixed;
+            background: linear-gradient(to bottom, #2d2dec, #00003f);
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
@@ -55,7 +55,6 @@
             z-index: auto;
             backdrop-filter: blur(10px);
             background: rgba(0, 0, 0, 0.4);
-            /* darker and cleaner */
         }
 
 
@@ -65,8 +64,8 @@
             border-radius: 16px;
             padding: 1.5rem;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(80px);
+            -webkit-backdrop-filter: blur(80px);
             color: #ffffff;
         }
 
@@ -255,16 +254,16 @@
         <!-- Shared Navbar -->
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'homepage' %}">Home</a>
-
-                <div class="collapse navbar-collapse justify-content-end">
-                    <ul class="navbar-nav align-items-center">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'telescope_log' %}">Logger</a></li>
+                <a class="navbar-brand" href="{% url 'telescope_log' %}">Telescope</a>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class="nav-link" href="{% url 'log_data' %}">Data</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'fits_page' %}">FITS</a></li>
+                    </ul>
 
+                    <!-- RIGHT SIDE LINKS -->
+                    <ul class="navbar-nav ms-auto align-items-center">
                         {% if user.is_authenticated %}
-                        <!-- User Profile Dropdown -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 {{ user.username }}
@@ -284,7 +283,6 @@
                             </ul>
                         </li>
                         {% else %}
-                        <!-- Login / Signup Buttons -->
                         <li class="nav-item">
                             <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
                         </li>
@@ -292,7 +290,6 @@
                             <a class="btn btn-info btn-sm" href="{% url 'register' %}">Sign Up</a>
                         </li>
                         {% endif %}
-
                     </ul>
                 </div>
             </div>
