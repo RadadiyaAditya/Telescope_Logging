@@ -151,7 +151,15 @@ def telescope_log_view(request):
                 return generate_pdf(request, general_instance.session_id)
             
             if 'send_email' in request.POST:
-                return redirect('send_email', session_id=general_instance.session_id)
+                # Store email credentials temporarily
+                request.session['smtp_user'] = request.POST.get("smtp_user")
+                request.session['smtp_password'] = request.POST.get("smtp_password")
+                request.session['recipient_email'] = request.POST.get("recipient_email")
+
+                request.session['return_to_log'] = True
+
+                from .views import send_email
+                return send_email(request, session_id=general_instance.session_id)
 
             messages.success(request, 'Log Saved Successfully')
             return redirect('telescope_log')
@@ -347,7 +355,7 @@ def send_email(request, session_id=None):
     if request.method == "POST":
         form = EmailForm(request.POST)
         if form.is_valid():
-            additional_email = form.cleaned_data.get("recipient_email")
+            additional_email = request.session.pop("recipient_email", None) or request.POST.get("recipient_email")
             if additional_email:
                 email_list = [email.strip() for email in additional_email.split(",") if email.strip()]
                 
@@ -380,9 +388,9 @@ def send_email(request, session_id=None):
 
     # get sender's email and password
     if request.method == "POST":
-        smtp_user = request.POST.get("smtp_user")
+        smtp_user = request.session.pop("smtp_user", None) or request.POST.get("smtp_user")
         smtp_email = request.user.email
-        smtp_password = request.POST.get("smtp_password")
+        smtp_password = request.session.pop("smtp_password", None) or request.POST.get("smtp_password")
 
 
     # send email from the sender's email to the recipient list
@@ -406,17 +414,28 @@ def send_email(request, session_id=None):
                 server.starttls()
                 server.login(smtp_user, smtp_password)
                 server.send_message(msg)
+            
+            
 
-            messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
-            return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
+            if request.session.pop("return_to_log", False):
+                messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
+                return redirect("telescope_log")
+            else:
+                messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
+                request.session.pop("recipient_email", None)
+                return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
 
         except Exception as e:
             messages.error(request, f"Failed to send email: {str(e)}")
             return redirect("session_detail", session_id=session_id) if session_id else redirect("log_data")
 
     if session_id:
+        messages.success(request, f"Email sent successfully to {', '.join(recipient_list)}.")
+        request.session.pop("recipient_email", None)
         return redirect("session_detail", session_id=session_id)
     else:
+        messages.success(request, f"Email conatining logs - {session_list} sent successfully to {', '.join(recipient_list)}.")
+        request.session.pop("recipient_email", None)
         return redirect("log_data")
 
 # Fetch weather data from API

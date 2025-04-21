@@ -80,6 +80,16 @@ JavaScript:
 
 <div>
     <h1 class="text-center mb-4">Telescope Logging System</h1>
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="container py-4 parallax-wrapper">
         <form method="post">
             {% csrf_token %}
@@ -273,33 +283,32 @@ JavaScript:
                 </button>
                 <button type="submit" name="download_pdf" class="btn btn-primary">Download as PDF</button>
             </div>
-        </form>
-    </div>
-</div>
 
-<div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="post">
-            {% csrf_token %}
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="smtpModalLabel">Email Login</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="smtp_user" class="form-label">Your Mail Username</label>
-                        <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
+            <div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="smtpModalLabel">Email Login</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="smtp_user" class="form-label">Your Mail Username</label>
+                                <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="smtp_password" class="form-label">Email Password</label>
+                                <input type="password" class="form-control" id="smtp_password" name="smtp_password"
+                                    required>
+                            </div>
+                            {{ email_form.recipient_email.label_tag }}
+                            {{ email_form.recipient_email }}
+                        </div>
+                        <input type="hidden" name="send_email" value="1">
+                        <div class="modal-footer">
+                            <button type="submit" name="send_email" class="btn btn-primary">Send Email</button>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="smtp_password" class="form-label">Email Password</label>
-                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" required>
-                    </div>
-                    {{ email_form.recipient_email.label_tag }}
-                    {{ email_form.recipient_email }}
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" name="send_email" class="btn btn-primary">Send Email</button>
                 </div>
             </div>
         </form>

@@ -156,6 +156,16 @@
 </style>
 <div>
     <h1 class="text-center mb-4">All Log Sessions</h1>
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="container py-4 section-card">
 
 
@@ -284,23 +294,38 @@
 {% endblock %}
 
 <script>
-    // Toggle all checkboxes
-    document.getElementById('selectAll').addEventListener('click', function () {
-        const checkboxes = document.querySelectorAll('input[name="session_ids"]');
-        checkboxes.forEach(cb => cb.checked = this.checked);
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // only wire up “selectAll” if you have one
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                document.querySelectorAll('input[name="session_ids"]')
+                    .forEach(cb => cb.checked = this.checked);
+            });
+        }
 
-    // Transfer selected checkboxes to email form on modal submit
-    document.getElementById('emailForm').addEventListener('submit', function (e) {
-        const selected = document.querySelectorAll('input[name="session_ids"]:checked');
-        selected.forEach(cb => {
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'session_ids';
-            hidden.value = cb.value;
-            this.appendChild(hidden);
-        });
+        // now wire the email form
+        const emailForm = document.getElementById('emailForm');
+        if (emailForm) {
+            emailForm.addEventListener('submit', function (e) {
+                // collect checked session_ids
+                const selected = document.querySelectorAll('input[name="session_ids"]:checked');
+                if (selected.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one session to email.');
+                    return;
+                }
+                selected.forEach(cb => {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'session_ids';
+                    hidden.value = cb.value;
+                    emailForm.appendChild(hidden);
+                });
+            });
+        }
     });
 </script>
+
 
 {% endblock %}
