@@ -16,11 +16,18 @@ Each model links to `GeneralInfo` through a OneToOneField for structured session
 """
 
 from django.db import models
+from django.conf import settings
+from datetime import datetime
 from django.contrib.auth.models import User
+
 
 # Create your models here.
 
 # General Information
+
+def generate_session_id():
+    return int(datetime.now().strftime("%Y%m%d%H%M%S"))
+
 class GeneralInfo(models.Model):
     """
     Stores session-level general information about telescope observations.
@@ -44,8 +51,8 @@ class GeneralInfo(models.Model):
 
     telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
     telescope_operator = models.CharField(max_length=100)
-    observer_name = models.ForeignKey(User, on_delete=models.PROTECT)
-    session_id = models.IntegerField( unique=True)
+    observer_name = models.ForeignKey(User, on_delete=models.PROTECT, default=1, null=True, blank=True)
+    session_id = models.BigIntegerField(unique=True, default=generate_session_id)
     log_start_time_lst = models.DateTimeField(blank=False, null=False, unique=True)
     log_start_time_utc = models.DateTimeField(blank=False, null=False)
     log_end_time_lst = models.DateTimeField(blank=False,  null=False, unique=True)
@@ -130,7 +137,7 @@ class TelescopeConfiguration(models.Model):
         related_name='telescope_configuration'
     )
 
-    TRACKING_MODES = [('Sidereal', 'Sidereal'), ('Lunar', 'Lunar'), ('Solar', 'Solar')]
+    TRACKING_MODES = [('Sidereal', 'Sidereal'), ('Non-Sidreal','Non-Sidreal'), ('Lunar', 'Lunar')]
     GUIDING_STATUSES = [('Active', 'Active'), ('Passive', 'Passive'), ('Disaled', 'Disabled')]
 
     focus_position = models.FloatField()
@@ -161,15 +168,31 @@ class Instrumentation(models.Model):
         related_name='instrumentation'
     )
 
-    OBSERVING_MODES = [('Imaging', 'Imaging'), ('Spectroscopy', 'Spectroscopy'), ('Spectropolarimetry', 'Spectropolarimetry'), ('Polarimetry', 'Polarimetry')]
-    FILTERS = [('None', 'None'),('U', 'U'), ('B', 'B'), ('V', 'V'), ('R', 'R'), ('I', 'I')]
-    INSTRUMENT_NAME = [('PARAS-1', 'PARAS-1'), ('PARAS-2', 'PARAS-2'), ('ProtoPol', 'ProtoPol'), ('LISA', 'LISA'),('EMPOL', 'EMPOL'),('LRS', 'LRS'),('FOSC', 'FOSC')]
+    OBSERVING_MODES = [('Imaging', 'Imaging'), 
+                       ('Spectroscopy', 'Spectroscopy'), 
+                       ('Spectropolarimetry', 'Spectropolarimetry'), 
+                       ('Polarimetry', 'Polarimetry')]
+    FILTERS = [('None', 'None'),
+               ('U', 'U'), 
+               ('B', 'B'), 
+               ('V', 'V'), 
+               ('R', 'R'), 
+               ('I', 'I'), 
+               ('Enter Manually','Enter Manually')]
+    INSTRUMENT_NAME = [('PARAS-1', 'PARAS-1'), 
+                       ('PARAS-2', 'PARAS-2'), 
+                       ('ProtoPol', 'ProtoPol'), 
+                       ('LISA', 'LISA'),
+                       ('EMPOL', 'EMPOL'),
+                       ('LRS', 'LRS'),
+                       ('FOSC', 'FOSC')]
     observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
     instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default='PARAS-1')
-    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp')], default='Bias')
-    filter_in_use = models.CharField(max_length=10, choices=FILTERS, default='U')
+    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Sky','Sky'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp'), ('Not Applicable', 'Not Applicable')], default='Bias')
+    filter_in_use = models.CharField(choices=FILTERS, default='U')
     exposure_time = models.FloatField(default='10')
     polarization_mode = models.BooleanField(default=False)
+
 
 # Remote Operation and Network Status
 class RemoteOperation(models.Model):

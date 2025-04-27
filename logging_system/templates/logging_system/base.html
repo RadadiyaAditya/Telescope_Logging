@@ -17,7 +17,7 @@
             font-family: 'Sora', sans-serif;
             color: #e0e0f0;
             min-height: 100vh;
-            background: linear-gradient(to bottom, #2d2dec, #00003f);
+            background: url('/static/logging_system/images/observatory-bg.png') no-repeat center center fixed;
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
@@ -111,7 +111,7 @@
         }
 
         .dropdown-menu a:hover {
-            background-color: #333;
+            background-color: #fffefe;
         }
 
         .bg-overlay {
@@ -257,7 +257,7 @@
                 <a class="navbar-brand" href="{% url 'telescope_log' %}">Telescope</a>
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'log_data' %}">Data</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'log_data' %}">Log Archive</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'fits_page' %}">FITS</a></li>
                     </ul>
 
@@ -273,6 +273,10 @@
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
+                                {% if user.is_authenticated and user.is_staff %}
+                                <li><a class="dropdown-item" href="{% url 'register' %}">Register User</a></li>
+                                <hr class="dropdown-divider">
+                                {% endif %}
                                 <li>
                                     <form method="post" action="{% url 'logout' %}" style="display: inline;">
                                         {% csrf_token %}

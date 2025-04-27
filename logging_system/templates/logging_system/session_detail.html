@@ -105,19 +105,19 @@ Styling:
                     </tr>
                     <tr>
                         <th>Log Start (UTC)</th>
-                        <td>{{ general.log_start_time_utc }}</td>
+                        <td>{{ general.log_start_time_utc|date:"Y-m-d H:i:s" }}</td>
                     </tr>
                     <tr>
                         <th>Log Start (LST)</th>
-                        <td>{{ general.log_start_time_lst }}</td>
+                        <td>{{ general.log_start_time_lst|date:"Y-m-d H:i:s" }}</td>
                     </tr>
                     <tr>
                         <th>Log End (UTC)</th>
-                        <td>{{ general.log_end_time_utc }}</td>
+                        <td>{{ general.log_end_time_utc|date:"Y-m-d H:i:s" }}</td>
                     </tr>
                     <tr>
                         <th>Log End (LST)</th>
-                        <td>{{ general.log_end_time_lst }}</td>
+                        <td>{{ general.log_end_time_lst|date:"Y-m-d H:i:s" }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -134,15 +134,15 @@ Styling:
                         </td>
                     </tr>
                     <tr>
-                        <th>Humidity</th>
+                        <th>Humidity (%)</th>
                         <td>{{ environmental_condition.humidity }}</td>
                     </tr>
                     <tr>
-                        <th>Wind Speed</th>
+                        <th>Wind Speed (km/s)</th>
                         <td>{{ environmental_condition.wind_speed }}</td>
                     </tr>
                     <tr>
-                        <th>Seeing</th>
+                        <th>Seeing (arcsec)</th>
                         <td>{{ environmental_condition.seeing }}</td>
                     </tr>
                     <tr>
@@ -164,7 +164,7 @@ Styling:
             <table class="table table-bordered table-striped">
                 <tbody>
                     <tr>
-                        <th>Target</th>
+                        <th>Source Name</th>
                         <td>{{ observation.target_name }}</td>
                     </tr>
                     <tr>
@@ -306,12 +306,12 @@ Styling:
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="smtpModalLabel">SMTP Email Login</h5>
+                    <h5 class="modal-title" id="smtpModalLabel">Mail Authentication</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="smtp_user" class="form-label">Your Mail Username</label>
+                        <label for="smtp_user" class="form-label">User Email ID</label>
                         <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
                     </div>
                     <div class="mb-3">

@@ -188,7 +188,7 @@
                 <input type="text" name="instrument_name" value="{{ instrument_name }}"
                     placeholder="Search by Instrument Name" class="form-control mb-2" />
 
-                <input type="text" name="target_name" value="{{ target_name }}" placeholder="Search by Target Name"
+                <input type="text" name="target_name" value="{{ target_name }}" placeholder="Search by Source Name"
                     class="form-control mb-2" />
 
                 <input type="date" name="date" value="{{ date_filter }}" placeholder="Filter by Log Start Date (UTC)"
@@ -200,6 +200,12 @@
 
         <form id="multiActionForm" method="post" action="{% url 'download_multi_pdf' %}">
             {% csrf_token %}
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Download selected log PDF</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
+                    Select Desired Logs to email
+                </button>
+            </div>
             <div class="d-flex flex-column gap-3 mt-4 mb-4">
                 {% for log in logs %}
                 <div class="log-card">
@@ -232,11 +238,11 @@
                         {{ log.instrumentation.instrument_name }}
                     </div>
                     <div class="log-col">
-                        <strong>Exposure</strong>
+                        <strong>Exposure (sec)</strong>
                         {{ log.instrumentation.exposure_time }}
                     </div>
                     <div class="log-col">
-                        <strong>Target</strong>
+                        <strong>Source Name</strong>
                         {{ log.observation.target_name }}
                     </div>
 
@@ -250,13 +256,6 @@
                 <div class="alert alert-warning">No logs available.</div>
                 {% endfor %}
             </div>
-
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">Download Selected as One PDF</button>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
-                    Send Combined PDF via Email
-                </button>
-            </div>
         </form>
     </div>
 </div>
@@ -269,12 +268,12 @@
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="smtpModalLabel">SMTP Email Login</h5>
+                    <h5 class="modal-title" id="smtpModalLabel">Mail Authentication</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="smtp_user" class="form-label">Your Mail Username</label>
+                        <label for="smtp_user" class="form-label">User Email ID</label>
                         <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
                     </div>
                     <div class="mb-3">

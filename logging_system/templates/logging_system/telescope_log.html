@@ -176,7 +176,19 @@ JavaScript:
                 <!-- Instrumentation -->
                 <div class="section-card flex-fill" style="min-width: 320px; max-width: 50%;">
                     <h4>Instrumentation</h4>
-                    {{ instrumentation_form|crispy }}
+                    <div class="form-group">
+                        {{ instrumentation_form.observing_mode|as_crispy_field }}
+                        {{ instrumentation_form.instrument_name|as_crispy_field }}
+                        {{ instrumentation_form.calibration|as_crispy_field }}
+
+                        <label for="id_filter_dropdown" class="form-label">Filter</label>
+                        <div class="d-flex gap-2 mb-3">
+                            {{ instrumentation_form.filter_in_use }}
+                            {{ instrumentation_form.custom_filter }}
+                        </div>
+                        {{ instrumentation_form.exposure_time|as_crispy_field }}
+                        {{ instrumentation_form.polarization_mode|as_crispy_field }}
+                    </div>
                 </div>
 
 
@@ -230,10 +242,6 @@ JavaScript:
                             <input type="text" id="log_start_time_display_lst" class="form-control mt-2 mb-3 p-2"
                                 readonly value="" data-bs-toggle="tooltip"
                                 title="This field cannot be edited manually.">
-
-                            <button type="button" name="start_log" class="btn btn-primary mt-3"
-                                onclick="startLog()">Start
-                                Log</button>
                         </div>
 
                         <!-- Real-Time Fields-->
@@ -265,11 +273,12 @@ JavaScript:
                             <!--<<input type="hidden" name="log_end_time_lst" id="id_log_end_time_lst">>-->
                             <input type="text" id="log_end_time_display_lst" class="form-control mt-2 mb-3 p-2" readonly
                                 value="" data-bs-toggle="tooltip" title="This field cannot be edited manually.">
-
-                            <button type="button" name="end_log" id="end_log_button" class="btn btn-danger mt-3"
-                                disabled onclick="endLog()">End Log</button>
                         </div>
-
+                        <div class="text-center">
+                            <button type="button" name="start_log" class="btn btn-primary mt-3"
+                                onclick="startLog()">Start
+                                Log</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -277,46 +286,36 @@ JavaScript:
 
             <!-- Fifth Row (Email & Download PDF)-->
             <div class="text-center mt-4 mb-5">
-                <button type="submit" class="btn btn-primary">Save Log</button>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#smtpModal">
-                    Send PDF via Email
-                </button>
-                <button type="submit" name="download_pdf" class="btn btn-primary">Download as PDF</button>
+                <button type="submit" name="end_log" id="end_log_button" class="btn btn-primary" disabled
+                    onclick="endLog()">End & Save Log</button>
             </div>
 
-            <div class="modal fade" id="smtpModal" tabindex="-1" aria-labelledby="smtpModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="smtpModalLabel">Email Login</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="smtp_user" class="form-label">Your Mail Username</label>
-                                <input type="text" class="form-control" id="smtp_user" name="smtp_user" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="smtp_password" class="form-label">Email Password</label>
-                                <input type="password" class="form-control" id="smtp_password" name="smtp_password"
-                                    required>
-                            </div>
-                            {{ email_form.recipient_email.label_tag }}
-                            {{ email_form.recipient_email }}
-                        </div>
-                        <input type="hidden" name="send_email" value="1">
-                        <div class="modal-footer">
-                            <button type="submit" name="send_email" class="btn btn-primary">Send Email</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </form>
     </div>
 </div>
 
 
 <script>
+
+    // To handle the manual entry of the filter field
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterDropdown = document.getElementById("id_filter_dropdown");
+        const customFilterInput = document.getElementById("id_custom_filter");
+
+        filterDropdown.addEventListener("change", function () {
+            if (this.value === "Enter Manually") {
+                customFilterInput.style.display = "block";
+            } else {
+                customFilterInput.style.display = "none";
+                customFilterInput.value = "";  // Clear if not used
+            }
+        });
+
+        // Ensure correct visibility on load
+        if (filterDropdown.value === "Enter Manually") {
+            customFilterInput.style.display = "block";
+        }
+    });
 
     document.getElementById("getTelescopeBtn").addEventListener("click", function () {
         fetch("/get-telescope-data/")

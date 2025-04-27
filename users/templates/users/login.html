@@ -54,7 +54,9 @@
         </div>
     </form>
     <div class="border-top pt-3 mt-4">
-        <small class="text">Need an account? <a href="{% url 'register' %}">Register</a></small>
+        {% if user.is_authenticated and user.is_superuser %}
+        <small class="text">Need to create a new account? <a href="{% url 'register' %}">Register</a></small>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

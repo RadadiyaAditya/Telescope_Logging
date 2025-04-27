@@ -52,6 +52,7 @@ class GeneralInfoForm(forms.ModelForm):
             # these parameters are not in databse but will be shown on webapp
             'lst_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
             'utc_time': forms.DateTimeInput(attrs={'readonly': 'readonly', 'type': 'datetime-local'}),
+            'session_id': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             }
         
 # Environmental Conditions Form
@@ -72,13 +73,27 @@ class EnvironmentalConditionForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['general_info']
         widgets = {
-            'temperature': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
-            'humidity': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
-            'wind_speed': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
-            'seeing': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'temperature': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Temperature in °C','step': '0.1'}),
+            'humidity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Humidity in %','step': '0.1'}),
+            'wind_speed': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Wind Speed in km/s','step': '0.1'}),
+            'seeing': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Seeing inn arcsec','step': '0.1'}),
             'cloud_coverage': forms.TextInput(attrs={'class': 'form-control'}),
             'moon_phase': forms.Select(attrs={'class': 'form-control'}),
         }
+        temprature = forms.IntegerField(
+        label="Temperature (°C)",
+        )
+        humidity = forms.IntegerField(
+        label="Humidity (%)",
+    )
+        wind_speed = forms.DecimalField(
+        label="Wind Speed (km/s)",
+    )
+        seeing = forms.DecimalField(
+        label="Seeing (arcsec)",
+    )
+
+
 # Observation Form
 class ObservationForm(forms.ModelForm):
 
@@ -108,10 +123,13 @@ class ObservationForm(forms.ModelForm):
         model = Observation
         fields = '__all__'
         exclude = ['general_info', 'right_ascension', 'declination']
+        widgets = {
+            'magnitude': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'eg. V=67.8'}),
+        }
 
     target_name = forms.CharField(
         label="Target name (as per SIMBAD)",
-        widget=forms.TextInput(attrs={"class": "form-control"}),
+        widget=forms.TextInput(attrs={"class": "form-control", 'placeholder': 'eg. NGC 1234'}),
     )
 
 
@@ -155,8 +173,7 @@ class TelescopeConfigurationForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['general_info']
         widgets = {
-            'pointing_accuracy': forms.NumberInput(attrs={'step': '0.1'}),
-            'focus_position': forms.NumberInput(attrs={'step': '0.1'}),
+            'focus_position': forms.NumberInput(attrs={'step': '0.1', 'class': 'form-control', 'placeholder': 'Focus Position'}),
         }
 
 
@@ -172,6 +189,30 @@ class InstrumentationForm(forms.ModelForm):
     Fields:
         exposure_time: Float input with step control.
     """
+    FILTERS = [
+        ('None', 'None'),
+        ('U', 'U'),
+        ('B', 'B'),
+        ('V', 'V'),
+        ('R', 'R'),
+        ('I', 'I'),
+        ('Enter Manually', 'Enter Manually')
+    ]
+
+    filter_in_use = forms.ChoiceField(
+        choices=FILTERS,
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_filter_dropdown'})
+    )
+
+    custom_filter = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter filter name',
+            'id': 'id_custom_filter',
+            'style': 'display:none;'
+        })
+    )
 
     class Meta:
         model = Instrumentation
@@ -180,8 +221,17 @@ class InstrumentationForm(forms.ModelForm):
 
     exposure_time = forms.FloatField(
         label="Exposure Time (sec)",
-        widget=forms.NumberInput(attrs={'step': '0.1'}),
+        widget=forms.NumberInput(attrs={'step': '0.1', 'class': 'form-control', 'placeholder': 'eg. 200s'}),
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        filter_choice = cleaned_data.get('filter_in_use')
+        custom = cleaned_data.get('custom_filter')
+
+        if filter_choice == 'Enter Manually' and not custom:
+            raise forms.ValidationError("Please enter a custom filter value.")
+        return cleaned_data
 
 # Remote Operation Form
 class RemoteOperationForm(forms.ModelForm):

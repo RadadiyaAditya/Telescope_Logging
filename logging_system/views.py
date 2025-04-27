@@ -24,6 +24,7 @@ import os
 from .models import GeneralInfo
 import requests
 from django.http import JsonResponse
+import json
 from dotenv import load_dotenv
 
 #required for downloading pdf
@@ -113,6 +114,8 @@ def telescope_log_view(request):
             general_instance = general_form.save(commit=False)
             general_instance.observer_name = request.user  # Autofill with logged-in user
             general_instance.save()
+
+            session_id = general_instance.session_id
             
             # For each related form, use commit=False, then set general_info.
             env_instance = env_form.save(commit=False)
@@ -131,9 +134,11 @@ def telescope_log_view(request):
             observation_instance.save()
             
             instrumentation_instance = instrumentation_form.save(commit=False)
+            if instrumentation_form.cleaned_data['filter_in_use'] == 'Enter Manually':
+                instrumentation_instance.filter_in_use = instrumentation_form.cleaned_data['custom_filter']
             instrumentation_instance.general_info = general_instance
             instrumentation_instance.save()
-            
+                        
             remote_instance = remote_form.save(commit=False)
             remote_instance.general_info = general_instance
             remote_instance.save()
@@ -144,24 +149,9 @@ def telescope_log_view(request):
 
             # create or append log data to .csv file
             append_log_to_csv(general_instance)
-
-            if 'download_pdf' in request.POST:
-                # Directly return the generated PDF file response.
-                messages.success(request, 'Log Downloaded & Saved Successfully')
-                return generate_pdf(request, general_instance.session_id)
             
-            if 'send_email' in request.POST:
-                # Store email credentials temporarily
-                request.session['smtp_user'] = request.POST.get("smtp_user")
-                request.session['smtp_password'] = request.POST.get("smtp_password")
-                request.session['recipient_email'] = request.POST.get("recipient_email")
 
-                request.session['return_to_log'] = True
-
-                from .views import send_email
-                return send_email(request, session_id=general_instance.session_id)
-
-            messages.success(request, 'Log Saved Successfully')
+            messages.success(request, f'Log Saved Successfully — Session ID: {session_id}')
             return redirect('telescope_log')
 
     else:
@@ -176,6 +166,7 @@ def telescope_log_view(request):
 
     return render(request, 'logging_system/telescope_log.html', {
         'general_form': general_form,
+        'generated_session_id': locals().get('session_id', None),
         'env_form': env_form,
         'telescope_form': telescope_form,
         'observation_form': observation_form,
@@ -183,7 +174,6 @@ def telescope_log_view(request):
         'remote_form': remote_form,
         'comment_form': comment_form,
         'email_form': email_form,
-        'session_id': locals().get('general_instance', None) and general_instance.session_id if 'send_email' in request.POST else None,
     })
 
 # Fetch telescope data from JSON file
@@ -219,10 +209,10 @@ def create_pdf_file(session_id):
             "telescope_name": general_instance.telescope_name,
             "telescope_operator": general_instance.telescope_operator,
             "observer_name": general_instance.observer_name,
-            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M %p"),
-            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M %p"),
-            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M %p"),
-            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M:%S %p"),
         },
         "weather": {
             "temperature": getattr(general_instance.environmental_condition, "temperature", ""),
@@ -590,10 +580,10 @@ def prepare_session_data(general_instance):
             "telescope_name": general_instance.telescope_name,
             "telescope_operator": general_instance.telescope_operator,
             "observer_name": general_instance.observer_name,
-            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M %p"),
-            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M %p"),
-            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M %p"),
-            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M %p"),
+            "log_start_time_utc": general_instance.log_start_time_utc.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_start_time_lst": general_instance.log_start_time_lst.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_end_time_utc": general_instance.log_end_time_utc.strftime("%B %d, %Y, %I:%M:%S %p"),
+            "log_end_time_lst": general_instance.log_end_time_lst.strftime("%B %d, %Y, %I:%M:%S %p"),
         },
         "weather": {
             "temperature": getattr(general_instance.environmental_condition, "temperature", ""),
