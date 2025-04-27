@@ -718,8 +718,8 @@ def append_log_to_csv(general_info):
     Appends a single observation session to the logs.csv file.
     """
 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    csv_file_path = os.path.join(BASE_DIR, "csv logs", "telescope_logs.csv")  # Adjust path as needed
+    csv_dir = os.getenv("CSV_LOG_PATH", "csv_logs")
+    csv_file_path = os.path.join(csv_dir, "telescope_logs.csv")  # Adjust path as needed
     os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
 
     # Preparing the data row
