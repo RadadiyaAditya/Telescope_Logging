@@ -68,30 +68,66 @@ class EnvironmentalConditionForm(forms.ModelForm):
         Form controls for temperature, humidity, wind, seeing, cloud coverage, and moon phase.
     """
 
+    temperature = forms.DecimalField(
+        label="Temperature (°C)",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "step": "0.1",
+            }
+        ),
+    )
+
+    humidity = forms.DecimalField(
+        label="Humidity (%)",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "step": "0.1",
+            }
+        ),
+    )
+
+    wind_speed = forms.DecimalField(
+        label="Wind Speed (km/s)",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "step": "0.1",
+            }
+        ),
+    )
+
+    seeing = forms.DecimalField(
+        label="Seeing (arcsec)",
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control",
+                "step": "0.1",
+            }
+        ),
+    )
+
+
+
     class Meta:
         model = EnvironmentalCondition
         fields = '__all__'
         exclude = ['general_info']
         widgets = {
-            'temperature': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Temperature in °C','step': '0.1'}),
-            'humidity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Humidity in %','step': '0.1'}),
-            'wind_speed': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Wind Speed in km/s','step': '0.1'}),
-            'seeing': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Seeing inn arcsec','step': '0.1'}),
-            'cloud_coverage': forms.TextInput(attrs={'class': 'form-control'}),
-            'moon_phase': forms.Select(attrs={'class': 'form-control'}),
+            'cloud_coverage': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Cloud Coverage",
+                }
+            ),
+            'moon_phase': forms.Select(
+                attrs={
+                    "class": "form-select",
+                    "placeholder": "Moon Phase",
+                }
+            ),
         }
-        temprature = forms.IntegerField(
-        label="Temperature (°C)",
-        )
-        humidity = forms.IntegerField(
-        label="Humidity (%)",
-    )
-        wind_speed = forms.DecimalField(
-        label="Wind Speed (km/s)",
-    )
-        seeing = forms.DecimalField(
-        label="Seeing (arcsec)",
-    )
 
 
 # Observation Form
