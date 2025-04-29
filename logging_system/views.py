@@ -335,8 +335,7 @@ def send_email(request, session_id=None):
     # predifined recipient list (Admin & miro)
 
     recipient_list = [
-        "adityaradadiya294@gmail.com",
-        "adityaradadiya296@gmail.com",
+        "miro@prl.res.in",
         request.user.email
     ]
 
@@ -652,65 +651,6 @@ def download_multi_pdf(request):
         content_type="application/pdf"
     )
 
-
-#fits page view
-@login_required
-def fits_view(request):
-
-    logs = (
-        GeneralInfo.objects.all()
-        .order_by('-log_start_time_utc')
-        .select_related(
-            'environmental_condition',
-            'observation',
-            'telescope_configuration',
-            'instrumentation',
-            'remote_operation',
-            'comments'
-        )
-    )
-
-
-    if request.method == "POST":
-        form = FitsUploadForm(request.POST, request.FILES)
-        session_id = request.POST.get("selected_log")
-
-        if form.is_valid() and session_id:
-            fits_file = request.FILES['fits_file']
-            general = get_object_or_404(GeneralInfo, session_id=session_id)
-
-            # Read and update FITS header
-            with fits.open(fits_file) as hdul:
-                header = hdul[0].header
-                header['SESSION'] = general.session_id
-                header['TELESCOP'] = general.telescope_name
-                header['OBSERVER'] = str(general.observer_name)
-                header['OPERATOR'] = general.telescope_operator
-                header['TARGET'] = general.observation.target_name
-                header['RA'] = general.observation.right_ascension
-                header['DEC'] = general.observation.declination
-                header['INSTRUME'] = general.instrumentation.instrument_name
-                header['EXPTIME'] = general.instrumentation.exposure_time
-
-                # Save new FITS file in buffer-memory
-                updated_data = io.BytesIO()
-                hdul.writeto(updated_data, overwrite=True)
-                updated_data.seek(0)
-
-                response = HttpResponse(updated_data.read(), content_type='application/fits')
-                filename = f"Modified_{general.session_id}.fits"
-                response['Content-Disposition'] = f'attachment; filename="{str(filename)}"'
-                return response
-
-        else:
-            messages.error(request, "Invalid form submission or log not selected.")
-    else:
-        form = FitsUploadForm()
-
-    return render(request, "logging_system/fits_page.html", {
-        "form": form,
-        "logs": logs,
-    })
 
 # Append log data to CSV file
 def append_log_to_csv(general_info):

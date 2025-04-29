@@ -27,6 +27,5 @@ urlpatterns = [
     path('download-pdf/<str:session_id>/', generate_pdf, name='download_pdf'),
     path('send-email/<str:session_id>/', send_email, name='send_email'),
     path('send-email/', send_email, name='send_email'),
-    path('fits/', fits_view, name='fits_page'),
     path('download-multi-pdf/', download_multi_pdf, name='download_multi_pdf')
 ]
