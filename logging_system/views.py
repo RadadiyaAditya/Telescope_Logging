@@ -18,7 +18,6 @@ from django.contrib import messages
 from .forms import (
     GeneralInfoForm, EnvironmentalConditionForm, TelescopeConfigurationForm,
     ObservationForm, InstrumentationForm, RemoteOperationForm, CommentForm, EmailForm,
-    FitsUploadForm
 )
 import os
 from .models import GeneralInfo

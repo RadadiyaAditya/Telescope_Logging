@@ -16,7 +16,6 @@ Each model links to `GeneralInfo` through a OneToOneField for structured session
 """
 
 from django.db import models
-from django.conf import settings
 from datetime import datetime
 from django.contrib.auth.models import User
 
@@ -49,14 +48,14 @@ class GeneralInfo(models.Model):
     ]
     
 
-    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default='TARA (1.2meter)')
-    telescope_operator = models.CharField(max_length=100)
+    telescope_name = models.CharField(max_length=100, choices=TELESCOPE_CHOICES, default=None)
+    telescope_operator = models.CharField(max_length=100, blank=True, null=True)
     observer_name = models.ForeignKey(User, on_delete=models.PROTECT, default=1, null=True, blank=True)
     session_id = models.BigIntegerField(unique=True, default=generate_session_id)
-    log_start_time_lst = models.DateTimeField(blank=False, null=False, unique=True)
-    log_start_time_utc = models.DateTimeField(blank=False, null=False)
-    log_end_time_lst = models.DateTimeField(blank=False,  null=False, unique=True)
-    log_end_time_utc = models.DateTimeField(blank=False, null=False)
+    log_start_time_lst = models.DateTimeField(blank=True, null=True, unique=True)
+    log_start_time_utc = models.DateTimeField(blank=True, null=True)
+    log_end_time_lst = models.DateTimeField(blank=True,  null=True, unique=True)
+    log_end_time_utc = models.DateTimeField(blank=True, null=True)
 
 
 
@@ -82,13 +81,13 @@ class EnvironmentalCondition(models.Model):
         related_name='environmental_condition'
     )
     
-    temperature = models.FloatField()
-    humidity = models.FloatField()
-    wind_speed = models.FloatField()
-    seeing = models.FloatField()
-    cloud_coverage = models.CharField(max_length=20)
+    temperature = models.FloatField(null=True, blank=True)
+    humidity = models.FloatField(null=True, blank=True)
+    wind_speed = models.FloatField(null=True, blank=True)
+    seeing = models.FloatField(null=True, blank=True)
+    cloud_coverage = models.CharField(max_length=20,null=True, blank=True)
     MOON_PHASES = [('New Moon', 'New Moon'), ('Full Moon', 'Full Moon'), ('First Quarter', 'First Quarter'), ('Last Quarter', 'Last Quarter')]
-    moon_phase = models.CharField(max_length=20, choices=MOON_PHASES, default='New Moon')
+    moon_phase = models.CharField(max_length=20, choices=MOON_PHASES, default=None, null=True, blank=True)
 
 
 # Observation Parameters
@@ -111,10 +110,10 @@ class Observation(models.Model):
         related_name='observation'
     )
 
-    target_name = models.CharField(max_length=100)
-    right_ascension = models.CharField(max_length=50)
-    declination = models.CharField(max_length=50)
-    magnitude = models.CharField(max_length=50)
+    target_name = models.CharField(max_length=100, blank=True, null=True)
+    right_ascension = models.CharField(max_length=50, blank=True, null=True)
+    declination = models.CharField(max_length=50, blank=True, null=True)
+    magnitude = models.CharField(max_length=50, blank=True, null=True)
 
 # Telescope Configuration
 class TelescopeConfiguration(models.Model):
@@ -140,10 +139,10 @@ class TelescopeConfiguration(models.Model):
     TRACKING_MODES = [('Sidereal', 'Sidereal'), ('Non-Sidreal','Non-Sidreal'), ('Lunar', 'Lunar')]
     GUIDING_STATUSES = [('Active', 'Active'), ('Passive', 'Passive'), ('Disaled', 'Disabled')]
 
-    focus_position = models.FloatField()
-    air_mass = models.FloatField(default=0)
-    tracking_mode = models.CharField(max_length=20, choices=TRACKING_MODES, default='Sidereal')
-    guiding_status = models.CharField(max_length=20, choices=GUIDING_STATUSES, default='Active')
+    focus_position = models.FloatField(null=True, blank=True)
+    air_mass = models.FloatField(default=0, null=True, blank=True)
+    tracking_mode = models.CharField(max_length=20, choices=TRACKING_MODES, default=None, null=True, blank=True)
+    guiding_status = models.CharField(max_length=20, choices=GUIDING_STATUSES, default=None, null=True, blank=True)
     emergency_stop = models.BooleanField(default=False)
 
 # Instrumentation
@@ -186,12 +185,12 @@ class Instrumentation(models.Model):
                        ('EMPOL', 'EMPOL'),
                        ('LRS', 'LRS'),
                        ('FOSC', 'FOSC')]
-    observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default='Imaging')
-    instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default='PARAS-1')
-    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Sky','Sky'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp'), ('Not Applicable', 'Not Applicable')], default='Bias')
-    filter_in_use = models.CharField(choices=FILTERS, default='U')
-    exposure_time = models.FloatField(default='10')
-    polarization_mode = models.BooleanField(default=False)
+    observing_mode = models.CharField(max_length=20, choices=OBSERVING_MODES, default=None, null=True, blank=True)
+    instrument_name = models.CharField(max_length=100, choices=INSTRUMENT_NAME, default=None, null=True, blank=True)
+    calibration = models.CharField(max_length=20, choices=[('Bias', 'Bias'), ('Sky','Sky'), ('Dark', 'Dark'), ('Flat', 'Flat'), ('lamp', 'lamp'), ('Not Applicable', 'Not Applicable')], default=None, null=True, blank=True)
+    filter_in_use = models.CharField(choices=FILTERS, default=None, null=True, blank=True)
+    exposure_time = models.FloatField(default=None, null=True, blank=True)
+    polarization_mode = models.BooleanField(default=False, null=True, blank=True)
 
 
 # Remote Operation and Network Status
@@ -213,7 +212,7 @@ class RemoteOperation(models.Model):
         related_name='remote_operation'
     )
 
-    remote_access = models.BooleanField(default=False)
+    remote_access = models.BooleanField(default=False, null=True, blank=True)
     remote_observer = models.CharField(max_length=100, blank=True, null=True)
 
 class Comments(models.Model):

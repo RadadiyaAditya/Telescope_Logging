@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (telescope_log_view, success_view, log_data_view, session_detail_view, 
-                    fetch_weather_data, generate_pdf, send_email, fits_view, download_multi_pdf,
+                    fetch_weather_data, generate_pdf, send_email, download_multi_pdf,
                     fetch_telescope_data)
 
 
